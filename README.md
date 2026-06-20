@@ -9,7 +9,7 @@ A visual, exploratory website that teaches people how AI works — from the basi
 | Layer | Technology |
 |---|---|
 | Frontend | React 18 + Vite + TypeScript + Tailwind CSS |
-| Visualisation | D3.js (concept map), Framer Motion |
+| Visualisation | Native SVG + pointer/wheel events (concept map), inline SVG diagrams |
 | Backend | FastAPI (Python) |
 | Database | Turso (libSQL) — user data, progress, refresh tokens |
 | Vector search | Turso sqlite-vec (Phase 4 — RAG simulation) |
@@ -110,8 +110,8 @@ The backend runs database migrations on startup — no manual SQL needed.
 | Phase | Scope | Status |
 |---|---|---|
 | 0 — Infrastructure | Auth, DB, Docker, CI/CD scaffolding | ✅ Done |
-| 1 — Concept map | D3 map, module shell, "What is AI?" | ✅ Done |
-| 2 — Neural Networks | Perceptron sliders, animated forward pass, TensorFlow.js XOR demo | Planned |
+| 1 — Concept map | Native SVG map, module shell, "What is AI?" | ✅ Done |
+| 2 — Neural Networks | Perceptron sliders, animated forward pass, activation chart, XOR demo | ✅ Done |
 | 3 — Transformers Lite | Tokenisation, 2D embedding scatter, attention heatmap | Planned |
 | 4 — RAG Pipeline | Vector search with Turso sqlite-vec, animated retrieval | Planned |
 | 5 — How to Use AI | Prompt engineering, hallucinations, real use cases | Planned |

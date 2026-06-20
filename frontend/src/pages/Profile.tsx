@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 
-import { NODES } from '../data/nodes'
+import { NODES, effectiveAvailable } from '../data/nodes'
 import { useAuth } from '../hooks/useAuth'
 import { useProgress } from '../hooks/useProgress'
 
@@ -67,7 +67,7 @@ export function Profile() {
         <div className="space-y-2">
           {NODES.map((node) => {
             const isCompleted = completed.has(node.id)
-            const isAvailable = node.available
+            const isAvailable = effectiveAvailable(node, completed)
 
             return (
               <div

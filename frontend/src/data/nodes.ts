@@ -5,7 +5,14 @@ export interface ConceptNode {
   x: number
   y: number
   available: boolean
+  unlockedBy?: string[]
   connections: string[]
+}
+
+export function effectiveAvailable(node: ConceptNode, completed: Set<string>): boolean {
+  if (node.available) return true
+  if (!node.unlockedBy?.length) return false
+  return node.unlockedBy.every((dep) => completed.has(dep))
 }
 
 export const NODES: ConceptNode[] = [
@@ -31,6 +38,7 @@ export const NODES: ConceptNode[] = [
     description: 'How artificial neurons learn from data',
     x: 850, y: 260,
     available: false,
+    unlockedBy: ['what-is-ai'],
     connections: ['activations'],
   },
   {

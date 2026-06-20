@@ -19,5 +19,14 @@ export function useProgress() {
     setCompleted((prev) => new Set([...prev, nodeId]))
   }, [])
 
-  return { completed, loading, markComplete }
+  const markIncomplete = useCallback(async (nodeId: string) => {
+    await api.delete(`/progress/${nodeId}`)
+    setCompleted((prev) => {
+      const next = new Set(prev)
+      next.delete(nodeId)
+      return next
+    })
+  }, [])
+
+  return { completed, loading, markComplete, markIncomplete }
 }

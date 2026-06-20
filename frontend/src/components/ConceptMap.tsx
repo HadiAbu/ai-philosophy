@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { EDGES, NODES, NODES_BY_ID, type ConceptNode } from '../data/nodes'
+import { EDGES, NODES, NODES_BY_ID, effectiveAvailable, type ConceptNode } from '../data/nodes'
 
 type NodeState = 'available' | 'completed' | 'locked'
 
 function nodeState(node: ConceptNode, completed: Set<string>): NodeState {
   if (completed.has(node.id)) return 'completed'
-  if (node.available) return 'available'
+  if (effectiveAvailable(node, completed)) return 'available'
   return 'locked'
 }
 
@@ -27,11 +27,9 @@ function Edge({ from, to }: { from: ConceptNode; to: ConceptNode }) {
 function MapNode({
   node,
   state,
-  onClick,
 }: {
   node: ConceptNode
   state: NodeState
-  onClick: () => void
 }) {
   const [hovered, setHovered] = useState(false)
   const clickable = state !== 'locked'
@@ -44,7 +42,8 @@ function MapNode({
   return (
     <g
       transform={`translate(${node.x},${node.y})`}
-      onClick={clickable ? onClick : undefined}
+      data-node-id={node.id}
+      data-clickable={clickable ? 'true' : undefined}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{ cursor: clickable ? 'pointer' : 'default' }}
@@ -152,9 +151,20 @@ export function ConceptMap({ completed }: { completed: Set<string> }) {
           drag.current = { ...drag.current, ox: e.clientX, oy: e.clientY }
         }
       }}
-      onPointerUp={() => {
+      onPointerUp={(e) => {
+        const moved = drag.current?.moved ?? false
         drag.current = null
         setCursor('grab')
+        if (!moved) {
+          // setPointerCapture redirects pointerup to the SVG, so onClick on child
+          // <g> elements never fires. Resolve the real target via hit-testing.
+          const el = document.elementFromPoint(e.clientX, e.clientY)
+          const group = el?.closest('[data-node-id]')
+          if (group?.getAttribute('data-clickable') === 'true') {
+            const nodeId = group.getAttribute('data-node-id')
+            if (nodeId) navigate(`/learn/${nodeId}`)
+          }
+        }
       }}
     >
       <g transform={`translate(${transform.x},${transform.y}) scale(${transform.k})`}>
@@ -166,7 +176,6 @@ export function ConceptMap({ completed }: { completed: Set<string> }) {
             key={node.id}
             node={node}
             state={nodeState(node, completed)}
-            onClick={() => navigate(`/learn/${node.id}`)}
           />
         ))}
       </g>

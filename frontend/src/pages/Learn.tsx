@@ -1,8 +1,9 @@
 import { type ComponentType, useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 
 import { NODES_BY_ID } from '../data/nodes'
 import { useProgress } from '../hooks/useProgress'
+import { NeuralNetworks } from './modules/NeuralNetworks'
 import { WhatIsAI } from './modules/WhatIsAI'
 
 type ModuleProps = {
@@ -12,12 +13,15 @@ type ModuleProps = {
 
 const MODULES: Record<string, ComponentType<ModuleProps>> = {
   'what-is-ai': WhatIsAI,
+  'neural-networks': NeuralNetworks,
 }
 
 export function Learn() {
   const { nodeId } = useParams<{ nodeId: string }>()
-  const { completed, markComplete } = useProgress()
+  const navigate = useNavigate()
+  const { completed, markComplete, markIncomplete } = useProgress()
   const [completing, setCompleting] = useState(false)
+  const [unmarking, setUnmarking] = useState(false)
 
   if (!nodeId || !NODES_BY_ID[nodeId] || !MODULES[nodeId]) {
     return <Navigate to="/" replace />
@@ -32,8 +36,19 @@ export function Learn() {
     setCompleting(true)
     try {
       await markComplete(nodeId!)
+      navigate('/')
     } finally {
       setCompleting(false)
+    }
+  }
+
+  async function handleMarkIncomplete() {
+    if (unmarking || !isCompleted) return
+    setUnmarking(true)
+    try {
+      await markIncomplete(nodeId!)
+    } finally {
+      setUnmarking(false)
     }
   }
 
@@ -52,9 +67,18 @@ export function Learn() {
           <div className="h-4 w-px bg-gray-700" />
           <span className="text-sm font-semibold text-white">{node.label}</span>
           {isCompleted && (
-            <span className="ml-auto rounded-full bg-indigo-900/60 px-3 py-1 text-xs font-medium text-indigo-300">
-              Completed ✓
-            </span>
+            <div className="ml-auto flex items-center gap-2">
+              <span className="rounded-full bg-indigo-900/60 px-3 py-1 text-xs font-medium text-indigo-300">
+                Completed ✓
+              </span>
+              <button
+                onClick={handleMarkIncomplete}
+                disabled={unmarking}
+                className="text-xs text-gray-600 transition-colors hover:text-gray-400 disabled:opacity-40"
+              >
+                {unmarking ? 'Removing…' : 'Mark incomplete'}
+              </button>
+            </div>
           )}
         </div>
       </div>

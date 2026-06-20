@@ -38,3 +38,19 @@ async def mark_complete(
         [user_id, node_id, now],
     )
     return JSONResponse({"node_id": node_id, "completed": True})
+
+
+@router.delete("/{node_id}")
+async def mark_incomplete(
+    node_id: str,
+    user_id: str = Depends(get_current_user),
+) -> JSONResponse:
+    if node_id not in _VALID_NODES:
+        raise HTTPException(status_code=404, detail="Unknown node")
+
+    client = await get_client()
+    await client.execute(
+        "DELETE FROM progress WHERE user_id = ? AND node_id = ?",
+        [user_id, node_id],
+    )
+    return JSONResponse({"node_id": node_id, "completed": False})
