@@ -1,4 +1,5 @@
-import { select, zoom, zoomIdentity } from 'd3'
+import { select } from 'd3-selection'
+import { zoom, zoomIdentity } from 'd3-zoom'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
