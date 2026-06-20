@@ -114,7 +114,7 @@ The backend runs database migrations on startup — no manual SQL needed.
 | 2 — Neural Networks | Perceptron sliders, animated forward pass, activation chart, XOR demo | ✅ Done |
 | 3 — Transformers Lite | Transformer architecture, BPE tokenizer demo, attention heatmap | ✅ Done |
 | 4 — RAG Pipeline | Vector search with Turso sqlite-vec, animated retrieval | ✅ Done |
-| 5 — How to Use AI | Prompt engineering, hallucinations, real use cases | Planned |
+| 5 — How to Use AI | Prompt engineering, hallucinations, real use cases | ✅ Done |
 
 ---
 

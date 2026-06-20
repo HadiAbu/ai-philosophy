@@ -5,11 +5,14 @@ import { NODES_BY_ID } from '../data/nodes'
 import { useProgress } from '../hooks/useProgress'
 import { Attention } from './modules/Attention'
 import { Embeddings } from './modules/Embeddings'
+import { Hallucinations } from './modules/Hallucinations'
 import { NeuralNetworks } from './modules/NeuralNetworks'
+import { PromptEngineering } from './modules/PromptEngineering'
 import { RAG } from './modules/RAG'
 import { Retrieval } from './modules/Retrieval'
 import { Tokenization } from './modules/Tokenization'
 import { Transformers } from './modules/Transformers'
+import { UseCases } from './modules/UseCases'
 import { WhatIsAI } from './modules/WhatIsAI'
 
 type ModuleProps = {
@@ -26,6 +29,9 @@ const MODULES: Record<string, ComponentType<ModuleProps>> = {
   'rag': RAG,
   'embeddings': Embeddings,
   'retrieval': Retrieval,
+  'prompt-engineering': PromptEngineering,
+  'hallucinations': Hallucinations,
+  'use-cases': UseCases,
 }
 
 export function Learn() {
