@@ -112,7 +112,7 @@ The backend runs database migrations on startup — no manual SQL needed.
 | 0 — Infrastructure | Auth, DB, Docker, CI/CD scaffolding | ✅ Done |
 | 1 — Concept map | Native SVG map, module shell, "What is AI?" | ✅ Done |
 | 2 — Neural Networks | Perceptron sliders, animated forward pass, activation chart, XOR demo | ✅ Done |
-| 3 — Transformers Lite | Tokenisation, 2D embedding scatter, attention heatmap | Planned |
+| 3 — Transformers Lite | Transformer architecture, BPE tokenizer demo, attention heatmap | ✅ Done |
 | 4 — RAG Pipeline | Vector search with Turso sqlite-vec, animated retrieval | Planned |
 | 5 — How to Use AI | Prompt engineering, hallucinations, real use cases | Planned |
 

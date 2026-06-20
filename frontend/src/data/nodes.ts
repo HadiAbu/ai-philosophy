@@ -55,6 +55,7 @@ export const NODES: ConceptNode[] = [
     description: 'The architecture behind modern language models',
     x: 850, y: 600,
     available: false,
+    unlockedBy: ['neural-networks'],
     connections: ['attention', 'tokenization'],
   },
   {
@@ -63,6 +64,7 @@ export const NODES: ConceptNode[] = [
     description: 'How models focus on relevant parts of input',
     x: 630, y: 760,
     available: false,
+    unlockedBy: ['transformers'],
     connections: [],
   },
   {
@@ -71,6 +73,7 @@ export const NODES: ConceptNode[] = [
     description: 'How text is split into model-understandable pieces',
     x: 1040, y: 760,
     available: false,
+    unlockedBy: ['transformers'],
     connections: ['rag'],
   },
   {

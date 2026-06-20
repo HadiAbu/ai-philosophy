@@ -3,7 +3,10 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 
 import { NODES_BY_ID } from '../data/nodes'
 import { useProgress } from '../hooks/useProgress'
+import { Attention } from './modules/Attention'
 import { NeuralNetworks } from './modules/NeuralNetworks'
+import { Tokenization } from './modules/Tokenization'
+import { Transformers } from './modules/Transformers'
 import { WhatIsAI } from './modules/WhatIsAI'
 
 type ModuleProps = {
@@ -14,6 +17,9 @@ type ModuleProps = {
 const MODULES: Record<string, ComponentType<ModuleProps>> = {
   'what-is-ai': WhatIsAI,
   'neural-networks': NeuralNetworks,
+  'transformers': Transformers,
+  'tokenization': Tokenization,
+  'attention': Attention,
 }
 
 export function Learn() {
