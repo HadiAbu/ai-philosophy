@@ -4,7 +4,10 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { NODES_BY_ID } from '../data/nodes'
 import { useProgress } from '../hooks/useProgress'
 import { Attention } from './modules/Attention'
+import { Embeddings } from './modules/Embeddings'
 import { NeuralNetworks } from './modules/NeuralNetworks'
+import { RAG } from './modules/RAG'
+import { Retrieval } from './modules/Retrieval'
 import { Tokenization } from './modules/Tokenization'
 import { Transformers } from './modules/Transformers'
 import { WhatIsAI } from './modules/WhatIsAI'
@@ -20,6 +23,9 @@ const MODULES: Record<string, ComponentType<ModuleProps>> = {
   'transformers': Transformers,
   'tokenization': Tokenization,
   'attention': Attention,
+  'rag': RAG,
+  'embeddings': Embeddings,
+  'retrieval': Retrieval,
 }
 
 export function Learn() {

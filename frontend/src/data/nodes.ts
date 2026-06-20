@@ -82,6 +82,7 @@ export const NODES: ConceptNode[] = [
     description: 'Retrieval-Augmented Generation systems',
     x: 1040, y: 920,
     available: false,
+    unlockedBy: ['tokenization'],
     connections: ['embeddings', 'retrieval'],
   },
   {
@@ -90,6 +91,7 @@ export const NODES: ConceptNode[] = [
     description: 'Representing meaning as vectors in space',
     x: 860, y: 1060,
     available: false,
+    unlockedBy: ['rag'],
     connections: [],
   },
   {
@@ -98,6 +100,7 @@ export const NODES: ConceptNode[] = [
     description: 'Finding relevant information using similarity',
     x: 1180, y: 1060,
     available: false,
+    unlockedBy: ['rag'],
     connections: [],
   },
 ]
