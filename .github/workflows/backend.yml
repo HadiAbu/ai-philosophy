@@ -21,15 +21,11 @@ jobs:
           cache-dependency-path: backend/requirements.txt
 
       - name: Install dependencies
-        run: pip install -r backend/requirements.txt pytest pytest-asyncio httpx
+        run: pip install -r backend/requirements.txt pytest pytest-asyncio aiosqlite
 
       - name: Run tests
-        run: |
-          if [ -d backend/tests ]; then
-            pytest backend/tests/ -v
-          else
-            echo "No tests yet — skipping"
-          fi
+        working-directory: backend
+        run: pytest -v
 
   deploy:
     needs: test

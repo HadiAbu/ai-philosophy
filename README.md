@@ -301,12 +301,12 @@ Tables are created automatically on startup via `run_migrations()`. Expired and 
 Both pipelines trigger only when files in their respective directories change.
 
 **Backend** (`.github/workflows/backend.yml`):
-1. Install dependencies + run tests (if `backend/tests/` exists)
-2. On push to `main`: build Docker image → push to ECR → trigger App Runner deployment
+1. Install dependencies + run 47 pytest tests (unit + integration, in-memory SQLite)
+2. On push to `master`: build Docker image → push to ECR → trigger App Runner deployment
 
 **Frontend** (`.github/workflows/frontend.yml`):
 1. TypeScript type check + Vite production build
-2. On push to `main`: build → sync to S3 → invalidate CloudFront distribution
+2. On push to `master`: build → sync to S3 → invalidate CloudFront distribution
 
 ### Required GitHub secrets
 
@@ -321,7 +321,6 @@ Both pipelines trigger only when files in their respective directories change.
 | `S3_BUCKET_NAME` | Frontend |
 | `CLOUDFRONT_DISTRIBUTION_ID` | Frontend |
 
-> **Note:** The CI workflows currently target `main`. If your default branch is `master`, update the `branches:` keys in both workflow files.
 
 ---
 
