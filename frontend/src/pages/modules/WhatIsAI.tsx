@@ -15,23 +15,23 @@ export function WhatIsAI({ onComplete, completed }: Props) {
           What is Artificial Intelligence?
         </h2>
         <p className="text-lg text-gray-400 leading-relaxed">
-          Understanding the technology that's reshaping our world — from the basics
-          to the big picture.
+          You've heard the term a thousand times. Here's what it actually means,
+          how it works, and why it matters — explained simply.
         </p>
       </section>
 
       {/* Section 1 — Definition */}
       <Section number={1} title="The Simple Definition">
         <p className="mb-6 text-gray-300 leading-relaxed">
-          <span className="font-semibold text-white">Artificial Intelligence</span> is the ability
-          of a computer to perform tasks that typically require human intelligence — things like
-          understanding language, recognising images, making decisions, and learning from experience.
+          <span className="font-semibold text-white">Artificial Intelligence</span> means a computer
+          that can do things we used to think only humans could do — understand language, recognise
+          faces, make decisions, and get better at tasks over time.
         </p>
         <p className="mb-8 text-gray-300 leading-relaxed">
-          The key word is <em>learning</em>. Unlike traditional software that follows fixed rules
-          you write by hand, an AI system discovers its own rules by studying enormous amounts of
-          examples. Show it ten million cat photos and it learns what "cat" means — not because
-          you told it, but because it found the pattern itself.
+          The key difference from normal software is <em>learning</em>. A regular program follows
+          instructions a programmer typed in. An AI discovers its own instructions by studying
+          massive amounts of examples. Show it ten million photos of cats with the label "cat,"
+          and it figures out what makes a cat a cat — without anyone writing those rules by hand.
         </p>
         <div className="grid grid-cols-3 gap-4">
           <FactCard
@@ -55,26 +55,26 @@ export function WhatIsAI({ onComplete, completed }: Props) {
       {/* Section 2 — AI Family */}
       <Section number={2} title="The AI Family Tree">
         <p className="mb-8 text-gray-300 leading-relaxed">
-          "AI", "Machine Learning", and "Deep Learning" are often used interchangeably, but they
-          describe different things. Think of them as nested circles — each one is a more
-          specific subset of the one around it.
+          "AI", "Machine Learning", and "Deep Learning" get thrown around like they all mean the
+          same thing. They don't. Think of them as circles inside circles — each one is a specific
+          type of the one outside it.
         </p>
         <AiFamilyDiagram />
         <div className="mt-8 space-y-3">
           <DefinitionRow
             term="Artificial Intelligence"
             color="text-indigo-300"
-            def="Any technique that lets a machine mimic human-level behaviour — a broad umbrella term."
+            def="The broad idea of machines doing things that normally require human smarts — recognising speech, making decisions, translating languages."
           />
           <DefinitionRow
             term="Machine Learning"
             color="text-violet-300"
-            def="A subset of AI where the machine learns from data rather than explicit rules."
+            def="A way to build AI where the machine learns from examples instead of following hand-written rules. Most modern AI is machine learning."
           />
           <DefinitionRow
             term="Deep Learning"
             color="text-purple-300"
-            def="A subset of ML using layered neural networks — the engine behind ChatGPT and image models."
+            def="A powerful type of machine learning that uses networks of artificial neurons stacked in layers. It's the engine behind ChatGPT, image generators, and voice assistants."
           />
         </div>
       </Section>
@@ -82,23 +82,27 @@ export function WhatIsAI({ onComplete, completed }: Props) {
       {/* Section 3 — How AI learns */}
       <Section number={3} title="How AI Learns">
         <p className="mb-8 text-gray-300 leading-relaxed">
-          Training an AI follows a loop. You give it labelled examples, it makes a guess,
-          measures how wrong it was, then adjusts its internal parameters to do better next time.
-          Repeat this millions of times and the AI gets very good.
+          Teaching an AI works a bit like training a dog. You show it a situation, it makes a
+          guess, you reward it when it's right and correct it when it's wrong. Repeat this millions
+          of times — automatically, without a person watching each step — and it gets very good.
+          The diagram below shows the four stages of that loop.
         </p>
         <LearningLoop />
         <p className="mt-8 text-sm text-gray-500 leading-relaxed">
-          Those internal parameters — called <span className="text-gray-400">weights</span> —
-          are what we mean when we say a model has been "trained". A model like GPT-4 has
-          hundreds of billions of them.
+          Each time the AI adjusts to do better, it tweaks millions of tiny numbers inside itself
+          called <span className="text-gray-400">weights</span> — think of them as dials, each
+          controlling how much the AI pays attention to one small piece of information. A model
+          like GPT-4 has hundreds of billions of these dials. "Training" just means finding the
+          right setting for all of them.
         </p>
       </Section>
 
       {/* Section 4 — AI today */}
       <Section number={4} title="AI in the Real World">
         <p className="mb-8 text-gray-300 leading-relaxed">
-          AI is already embedded in tools billions of people use every day. The underlying
-          techniques vary, but the core idea — machines learning patterns from data — is the same.
+          AI is already woven into tools billions of people use every day — often without
+          realising it. The technology behind each one is different in detail, but the core idea
+          is always the same: a machine that learned patterns from enormous amounts of data.
         </p>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <UseCaseCard icon="💬" title="Language Models" desc="ChatGPT, Claude, Gemini — predict the next word, trillions of times" />

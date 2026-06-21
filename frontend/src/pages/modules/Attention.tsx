@@ -210,14 +210,16 @@ export function Attention({ onComplete, completed }: ModuleProps) {
 
       <Section number={1} title="Query, Key, Value">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          Attention is modelled on a database lookup. Each token generates three vectors
-          from its embedding via learned weight matrices:
+          The word "bank" means completely different things in "river bank" and "savings
+          bank." A transformer needs to figure out which meaning applies by looking at
+          surrounding words. Attention is the mechanism that does this — it lets every
+          word ask "which other words in this sentence should I focus on?" Here's how it works:
         </p>
         <div className="grid grid-cols-3 gap-3 mb-5 text-sm">
           {[
-            { name: 'Query (Q)', color: 'text-indigo-300', def: '"What am I looking for?"', border: 'border-indigo-800' },
-            { name: 'Key (K)',   color: 'text-emerald-300', def: '"What do I contain?"', border: 'border-emerald-800' },
-            { name: 'Value (V)', color: 'text-pink-300',   def: '"What do I give away?"', border: 'border-pink-800' },
+            { name: 'Query (Q)', color: 'text-indigo-300', def: '"What am I looking for?" — each word asks this', border: 'border-indigo-800' },
+            { name: 'Key (K)',   color: 'text-emerald-300', def: '"What do I offer?" — each word advertises what it knows', border: 'border-emerald-800' },
+            { name: 'Value (V)', color: 'text-pink-300',   def: '"What is my actual content?" — what gets shared when a match is found', border: 'border-pink-800' },
           ].map(({ name, color, def, border }) => (
             <div key={name} className={`rounded-xl border ${border} bg-gray-900/40 p-3 text-center`}>
               <p className={`font-mono font-bold mb-1 ${color}`}>{name}</p>
@@ -227,37 +229,43 @@ export function Attention({ onComplete, completed }: ModuleProps) {
         </div>
         <QKVDiagram />
         <p className="mt-4 text-sm text-gray-500 leading-relaxed">
-          The dot product Q·Kᵀ scores how well each query matches each key. Dividing by
-          √d stabilises gradients in high dimensions. Softmax turns scores into weights
-          that sum to 1. The output is a weighted average of the Values.
+          For each word, the model compares its Query to every other word's Key to get a
+          relevance score. Higher scores mean "pay more attention here." Those scores get
+          turned into percentages that add up to 100%. Finally, the model combines all the
+          words' Values in proportion to those percentages. The result: each word's meaning
+          gets enriched by the words that mattered most to it.
         </p>
       </Section>
 
       <Section number={2} title="Sentence Heatmaps">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          These matrices show precomputed attention weights for a single head. Each cell
-          is how much the row-token attends to the column-token. Darker indigo = stronger
-          attention. Click a token to highlight what it focuses on.
+          The grid below shows real attention scores for a sentence. Each row is a word,
+          and each column is also a word. A dark cell means the row-word is paying a lot of
+          attention to the column-word. Click any word (the buttons above the grid) to
+          highlight where it focuses.
         </p>
         <AttentionHeatmap />
         <p className="mt-4 text-sm text-gray-500">
-          Notice: determiners ("The") attend mostly to themselves; verbs attend to their
-          subjects; adjectives attend strongly to the nouns they modify.
+          Notice the patterns: "The" mostly attends to itself and the noun it introduces.
+          Verbs look toward their subject. Adjectives strongly attend to the noun they
+          describe. The model learned all these grammar patterns automatically, just by
+          reading massive amounts of text — nobody programmed these rules in.
         </p>
       </Section>
 
       <Section number={3} title="Multi-Head Attention">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          A single attention head can only capture one type of relationship at a time.
-          Transformers run H heads in parallel — each with its own Q, K, V matrices —
-          then concatenate the results. Different heads tend to specialise in different
-          linguistic patterns.
+          One round of attention can only notice one type of relationship at a time —
+          like someone who can either focus on grammar or meaning, but not both at once.
+          So transformers run many attention "heads" in parallel, each specialising in
+          something different. All their findings get combined at the end.
         </p>
         <MultiHeadDiagram />
         <p className="mt-4 text-sm text-gray-500 leading-relaxed">
-          GPT-2 small uses 12 heads per layer across 12 layers — 144 distinct attention
-          patterns, each contributing a different perspective to the final representation.
-          Larger models like GPT-4 use 96 heads across 96 layers.
+          GPT-2 (a relatively small model) uses 12 heads per layer across 12 layers —
+          that's 144 different angles of understanding applied to every single word.
+          GPT-4 uses many more. Each head adds another dimension of context that helps
+          the model understand subtle meaning.
         </p>
       </Section>
 

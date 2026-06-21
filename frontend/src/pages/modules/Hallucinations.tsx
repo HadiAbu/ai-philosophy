@@ -23,10 +23,10 @@ function WhyDiagram() {
     <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-5">
       <div className="flex flex-col gap-2 text-xs font-mono">
         {[
-          { label: 'Training objective', body: 'Predict the next token. Maximise the probability of the correct next token across billions of examples.', color: '#818cf8' },
-          { label: 'What the model learns', body: 'Patterns in language — what words tend to follow what other words. Encyclopedic but shallow.', color: '#f59e0b' },
-          { label: 'What the model does NOT learn', body: 'A truth-checking mechanism. The model has no way to verify whether a generated token matches reality.', color: '#f87171' },
-          { label: 'Result', body: 'It generates fluent, confident-sounding text that may be factually wrong — because fluency was the training signal, not accuracy.', color: '#a78bfa' },
+          { label: 'Training objective', body: 'During training, the AI\'s one job is to predict the next word. It reads billions of sentences and adjusts itself to get better and better at that single task — guessing what word comes next.', color: '#818cf8' },
+          { label: 'What the model learns', body: 'Which words typically follow which other words — across millions of topics. It becomes extremely good at sounding natural, informed, and fluent on almost any subject.', color: '#f59e0b' },
+          { label: 'What the model does NOT learn', body: 'Nobody ever taught it what\'s true or false. It has no way to check whether a sentence it\'s writing matches reality — it only knows whether it sounds like the kind of thing that gets written.', color: '#f87171' },
+          { label: 'Result', body: 'It produces text that sounds exactly right — confident, well-structured, specific — but might be completely made up. It wasn\'t trained to be accurate. It was trained to sound accurate.', color: '#a78bfa' },
         ].map(({ label, body, color }) => (
           <div key={label} className="rounded-lg border border-gray-800 p-3"
             style={{ borderLeftColor: color, borderLeftWidth: 3 }}>
@@ -91,7 +91,7 @@ const EXAMPLES: {
 ]
 
 function ExamplesGallery() {
-  const [active, setActive] = useState<HallucinationType>('confabulation')
+  const [active, setActive] = useState<HallucinationType>('factual')
   const ex = EXAMPLES.find((e) => e.type === active)!
 
   return (
@@ -139,37 +139,37 @@ const STRATEGIES = [
   {
     title: 'Retrieval-Augmented Generation (RAG)',
     icon: '🔍',
-    body: 'Retrieve relevant source documents and pass them as context. The model then synthesises from real text rather than generating from memory. False citations become impossible when the sources are in the prompt.',
-    link: 'You built this in the RAG module.',
+    body: 'Instead of asking the AI to remember things, you hand it the real documents to read first. It answers based on what\'s right in front of it — not what it vaguely recalls from training. When the source is in the prompt, it can\'t invent one.',
+    link: 'Covered in depth in the RAG module.',
   },
   {
     title: 'Ask the model to cite sources',
     icon: '📎',
-    body: 'Prompt: "Support every claim with a citation in the format [Author, Year]. If you don\'t have a verified source, say so." This doesn\'t prevent hallucination, but makes it visible and forces hedging.',
+    body: 'Add to your prompt: "Back every claim with a source. If you don\'t have a verified one, say so." This doesn\'t stop the AI from making things up — but it forces it to flag gaps, and makes any invented citations much easier to spot.',
     link: null,
   },
   {
     title: 'Request uncertainty expression',
     icon: '🤔',
-    body: 'Prompt: "If you are not confident about a fact, prefix the sentence with \'I\'m not certain, but…\'". Calibrated uncertainty is far more useful than false confidence.',
+    body: 'Add to your prompt: "If you\'re not confident about something, start that sentence with \'I\'m not certain, but…\'." An AI that admits uncertainty is far more useful than one that sounds sure about everything.',
     link: null,
   },
   {
     title: 'Use a code interpreter for calculations',
     icon: '🧮',
-    body: 'Never trust an LLM for arithmetic, date math, or numerical reasoning. Route calculations to a code execution environment and feed results back to the model.',
+    body: 'AI models don\'t actually do math — they pattern-match on what calculations usually look like. For anything numerical, use a real calculator or ask the AI to write code and run it. Don\'t trust the raw answer.',
     link: null,
   },
   {
     title: 'Real-time tools for current information',
     icon: '🌐',
-    body: 'For prices, news, weather, or any live data: use a web search tool or API call, then summarise the results with the LLM. The LLM\'s job is synthesis, not recall.',
+    body: 'For prices, news, or anything that changes over time: use a real search or live data source, then let the AI summarise the results. The AI\'s job is to help you understand information — not to remember it.',
     link: null,
   },
   {
     title: 'Verify before publishing',
     icon: '✅',
-    body: 'Treat LLM output as a first draft from a junior who doesn\'t know what they don\'t know. For anything factual that will be published or acted on, verify independently.',
+    body: 'Think of AI output as a first draft from someone who sounds very confident but might be guessing. For anything factual that matters — a medical question, a legal detail, a statistic you\'ll share — look it up independently before acting on it.',
     link: null,
   },
 ]
@@ -202,38 +202,41 @@ export function Hallucinations({ onComplete, completed }: ModuleProps) {
         </div>
         <h2 className="mb-4 text-4xl font-bold tracking-tight">Hallucinations</h2>
         <p className="text-lg text-gray-400 leading-relaxed">
-          Language models sometimes generate confident, fluent, completely wrong
-          information. Understanding why — and how to catch it — is essential
-          for using AI responsibly.
+          AI chatbots can sound completely confident while being completely wrong.
+          This isn't a glitch you can patch — it's baked into how they're built.
+          Here's why it happens, and what you can do about it.
         </p>
       </section>
 
       <Section number={1} title="Why Models Hallucinate">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          The root cause is architectural: models are trained to produce the most
-          likely next token, not the most truthful one. These are very different
-          objectives.
+          AI models learn by reading enormous amounts of text and practicing one
+          skill: predicting what word comes next. They get remarkably good at
+          this — but "predicting what sounds right" and "knowing the truth"
+          are not the same thing.
         </p>
         <WhyDiagram />
         <p className="mt-3 text-sm text-gray-500">
-          This is not a bug to be fixed — it is a fundamental property of how
-          autoregressive language models work. Mitigation strategies work around
-          it; they don't eliminate it.
+          This isn't a bug engineers can simply fix. It's built into the training
+          method itself. The techniques below help you work around it — but none
+          of them make it disappear entirely.
         </p>
       </Section>
 
       <Section number={2} title="Types of Hallucinations">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          Hallucinations take several forms. The most dangerous are the ones that
-          look most credible.
+          Hallucinations show up in a few different ways. The most dangerous
+          aren't the obviously wrong ones — they're the ones that look completely
+          believable. Click through the examples below to see each type in action.
         </p>
         <ExamplesGallery />
       </Section>
 
       <Section number={3} title="How to Mitigate Them">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          There is no single fix — reliable AI applications combine several of
-          these approaches.
+          There's no single trick that prevents all hallucinations. In practice,
+          people combine a few of these depending on how high-stakes the task is.
+          The more important the output, the more of these you should stack.
         </p>
         <Mitigations />
       </Section>

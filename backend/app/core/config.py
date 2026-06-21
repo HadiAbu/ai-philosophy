@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic_settings import BaseSettings
 
 
@@ -9,7 +11,7 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 7
     cors_origins: list[str] = ["http://localhost:5173"]
-    environment: str = "development"
+    environment: Literal["development", "production"] = "development"
 
     class Config:
         env_file = ".env"

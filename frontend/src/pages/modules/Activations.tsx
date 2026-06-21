@@ -118,8 +118,8 @@ const FUNCTIONS: Record<FnKey, FnDef> = {
     formula: 'f(x) = max(0, x)',
     f: (x) => Math.max(0, x),
     df: (x) => (x > 0 ? 1 : 0),
-    pros: ['Computationally cheap', 'No vanishing gradient for x > 0'],
-    cons: ['Dying ReLU: neurons stuck at 0 if always negative', 'Not differentiable at x = 0'],
+    pros: ['Very fast to compute', 'Keeps learning signals strong for positive values'],
+    cons: ['Neurons can get "stuck at zero" and stop learning if their inputs stay negative', 'Has a sharp corner at x = 0 (technically not smooth there)'],
   },
   sigmoid: {
     label: 'Sigmoid',
@@ -127,8 +127,8 @@ const FUNCTIONS: Record<FnKey, FnDef> = {
     formula: 'f(x) = 1 / (1 + e⁻ˣ)',
     f: (x) => 1 / (1 + Math.exp(-x)),
     df: (x) => { const s = 1 / (1 + Math.exp(-x)); return s * (1 - s) },
-    pros: ['Output ∈ (0, 1) — interpretable as probability', 'Smooth everywhere'],
-    cons: ['Vanishes: gradient ≈ 0 for |x| > 4', 'Output not zero-centred'],
+    pros: ['Output is always between 0 and 1 — easy to interpret as a probability', 'Smooth and gentle curve'],
+    cons: ['Becomes almost completely flat for large or small inputs, so learning stalls in deep networks', 'Tends to push outputs toward positive values, which can slow training'],
   },
   tanh: {
     label: 'Tanh',
@@ -136,8 +136,8 @@ const FUNCTIONS: Record<FnKey, FnDef> = {
     formula: 'f(x) = (eˣ − e⁻ˣ) / (eˣ + e⁻ˣ)',
     f: Math.tanh,
     df: (x) => 1 - Math.tanh(x) ** 2,
-    pros: ['Output ∈ (−1, 1) — zero-centred', 'Stronger gradient than sigmoid near 0'],
-    cons: ['Still vanishes for |x| > 2', 'Slightly more expensive than ReLU'],
+    pros: ['Output centres around zero, which trains more efficiently than Sigmoid', 'Has stronger learning signals near the centre'],
+    cons: ['Still becomes flat for very large or very small inputs', 'Slightly slower to compute than ReLU'],
   },
   gelu: {
     label: 'GeLU',
@@ -145,8 +145,8 @@ const FUNCTIONS: Record<FnKey, FnDef> = {
     formula: 'f(x) ≈ 0.5x · (1 + tanh(√(2/π) · (x + 0.044715x³)))',
     f: geluApprox,
     df: dGeluApprox,
-    pros: ['Smooth non-zero for negative x', 'State-of-art in GPT-2, BERT, LLaMA'],
-    cons: ['Expensive to compute vs ReLU', 'No simple formula for exact version'],
+    pros: ['Gives small negative values some weight instead of zeroing them out — keeps more neurons active', 'Used in today\'s most powerful AI (GPT-2, BERT, GPT-4)'],
+    cons: ['More expensive to compute than ReLU', 'The exact formula is complex (needs an approximation in practice)'],
   },
 }
 
@@ -264,7 +264,7 @@ x = F.gelu(x)
 x = 0.5 * x * (1 + torch.tanh(
     math.sqrt(2/math.pi) * (x + 0.044715 * x**3)
 ))`,
-    why: 'GeLU is "probabilistically" gated — it scales x by the probability that x is positive under a Gaussian. This smooth, non-zero response for negative inputs prevents dying neurons and empirically outperforms ReLU on transformers.',
+    why: 'GeLU gives negative inputs a small "partial credit" instead of cutting them to zero completely. This means more parts of the network stay active and learning. It consistently outperforms ReLU on transformer models, which is why OpenAI switched to it for GPT-2.',
   },
   {
     name: 'SiLU / Swish',
@@ -277,7 +277,7 @@ x = F.silu(x)        # x * sigmoid(x)
 
 # Or manually:
 x = x * torch.sigmoid(x)`,
-    why: 'SiLU is self-gated: the input gates itself. It\'s smooth, unbounded above, and slightly negative for x slightly below 0. LLaMA switched from ReLU to SiLU in its feed-forward layers for better accuracy at no extra parameter cost.',
+    why: 'SiLU uses the value itself to decide how much of it passes through — larger positive values pass almost completely, while small or negative values are softly reduced. Meta switched LLaMA to SiLU and got better accuracy at no extra cost.',
   },
 ]
 
@@ -323,43 +323,50 @@ export function Activations({ onComplete, completed }: ModuleProps) {
         </div>
         <h2 className="mb-4 text-4xl font-bold tracking-tight">Activations</h2>
         <p className="text-lg text-gray-400 leading-relaxed">
-          A single mathematical function separates shallow curve-fitting from
-          deep learning. Activation functions introduce non-linearity — and
-          choosing the right one meaningfully affects what a network can learn.
+          There's one small ingredient in every neural network that makes deep
+          learning possible. Without it, no matter how many layers you add, the
+          AI can only learn straight-line patterns. That ingredient is the
+          activation function.
         </p>
       </section>
 
       <Section number={1} title="Why Non-Linearity is Essential">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          Without an activation function, stacking layers is pointless — any
-          depth of linear layers collapses to a single linear layer. Add a
-          non-linearity between each pair of layers, and the network can
-          approximate arbitrarily complex functions.
+          Imagine folding a piece of paper. One fold makes a straight crease. But fold
+          it multiple times at different angles and you can make almost any shape. Activation
+          functions are like those folds. They let each layer bend what the previous layer
+          learned in a new direction. Without them, adding more layers is pointless —
+          mathematically, the whole stack collapses into one flat step and can only learn
+          the simplest relationships. Toggle between the two views below to see the difference.
         </p>
         <LinearCollapseDemo />
       </Section>
 
       <Section number={2} title="Function Gallery">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          Drag the slider to trace the function and its gradient. The dashed line
-          shows f′(x) — where it's near zero, gradients vanish during
-          backpropagation and the network stops learning in those regions.
+          Each activation function has a different curve. The solid line is the
+          function itself. The dashed line shows how steep that curve is at each point —
+          when it's nearly flat (close to zero), the network struggles to learn in that
+          region, because there's no clear signal to guide its adjustments. Drag the
+          slider to see how each function responds to different inputs.
         </p>
         <FunctionGallery />
       </Section>
 
       <Section number={3} title="Modern Activations">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          State-of-the-art models have moved beyond ReLU. GeLU and SiLU both
-          allow small negative outputs, which prevents dying neurons and improves
-          gradient flow throughout very deep networks.
+          The AI models powering today's chatbots — GPT-4, LLaMA, BERT — use
+          newer activation functions that outperform ReLU. Both GeLU and SiLU
+          allow small negative values to pass through instead of cutting them to
+          zero, which keeps more of the network actively learning at once.
         </p>
         <ModernActivations />
         <p className="mt-3 text-sm text-gray-500">
-          The choice of activation is largely empirical — GeLU became the default
-          for encoder-style transformers (BERT family); SiLU/Swish for decoder
-          and generative models (LLaMA family). The underlying theory for why one
-          beats the other in a given architecture is still an active research area.
+          Which activation works best is discovered through experimentation rather
+          than pure theory. GeLU became the go-to for models that process entire
+          sentences at once (BERT family). SiLU works better for models that
+          generate text one word at a time (LLaMA family). Researchers are still
+          studying exactly why.
         </p>
       </Section>
 

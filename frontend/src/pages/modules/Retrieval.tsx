@@ -246,65 +246,66 @@ export function Retrieval({ onComplete, completed }: ModuleProps) {
         </div>
         <h2 className="mb-4 text-4xl font-bold tracking-tight">Retrieval</h2>
         <p className="text-lg text-gray-400 leading-relaxed">
-          Finding relevant information isn't keyword matching anymore — it's geometry.
-          Vector search locates the nearest points in embedding space.
+          Old-fashioned search looks for exact words. Modern AI search is smarter — it finds
+          documents that mean the same thing, even if they use completely different words.
         </p>
       </section>
 
       <Section number={1} title="Cosine Similarity">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          To compare two embeddings, we measure the angle between them.{' '}
-          <span className="font-mono text-indigo-300">cos(θ) = 1</span> means identical
-          direction (very similar meaning);{' '}
-          <span className="font-mono text-indigo-300">cos(θ) = 0</span> means orthogonal
-          (unrelated);{' '}
-          <span className="font-mono text-indigo-300">cos(θ) = −1</span> means opposite.
-          Drag the slider to see how the score changes with angle.
+          To measure how similar two words or documents are, we look at the angle between
+          their number-lists (vectors). If two vectors point in the same direction, the
+          things they represent have very similar meanings. If they point in completely
+          different directions, the things are unrelated. The cosine of that angle gives a
+          score from -1 to 1. Drag the slider below to see how the score changes.
         </p>
         <CosinDemo />
         <p className="mt-3 text-sm text-gray-500">
-          We use cosine rather than Euclidean distance because it ignores vector magnitude —
-          a short document and a long document about the same topic should score highly even
-          though their vectors differ in length.
+          We use the angle rather than straight-line distance because direction matters more
+          than size. A short tweet and a long article on the same topic should be considered
+          similar — they'd have very different sized vectors, but point in the same direction.
         </p>
       </Section>
 
       <Section number={2} title="k-Nearest Neighbours">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          Given a query vector, k-NN search returns the k documents whose embeddings are
-          closest. Click anywhere on the map below to place a query point and see which
-          documents it retrieves. Adjust k to see more or fewer neighbours.
+          Once your question is converted into a number-list, the system finds the k
+          documents in the library whose number-lists are most similar — the k nearest
+          neighbours. Click anywhere on the map below to drop your query and watch it
+          connect to the closest documents. Change k to fetch more or fewer results.
         </p>
         <KNNDemo />
         <p className="mt-3 text-sm text-gray-500">
-          Exact k-NN requires computing the distance to every document — O(n) per query.
-          With a million documents and a million queries per second, this is impractical.
+          For a small library, checking every single document is fine. But with millions of
+          documents and thousands of searches per second, comparing every document to every
+          query would be impossibly slow. That's where approximate search comes in.
         </p>
       </Section>
 
       <Section number={3} title="Approximate Search at Scale">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          Real-world vector stores use approximate nearest neighbour (ANN) algorithms that
-          trade a small accuracy loss for orders-of-magnitude speed gains.
+          Real search systems use clever shortcuts that skip most of the library and still
+          find the right answer almost every time. They trade a tiny bit of accuracy for a
+          dramatic speed improvement. Here are three common approaches:
         </p>
         <div className="grid gap-3 sm:grid-cols-3 text-xs">
           {[
             {
               name: 'HNSW',
               full: 'Hierarchical Navigable Small Worlds',
-              body: 'Builds a graph where each node connects to its nearest neighbours across multiple layers. Search navigates from a coarse entry layer down to fine-grained layers.',
+              body: 'Builds a layered map where similar documents link to each other. To find the best match, it starts at a rough overview layer and zooms in step by step — like finding an address using continent → country → city → street.',
               used: 'Qdrant, Weaviate, pgvector',
             },
             {
               name: 'IVF',
               full: 'Inverted File Index',
-              body: 'Clusters vectors into Voronoi cells. A query searches only the nearest cells rather than the whole database, reducing computation by 10–100×.',
-              used: 'FAISS',
+              body: 'Groups all documents into buckets of similar ones first. When you search, it only checks the most relevant buckets, skipping 90–99% of the library and getting the same result much faster.',
+              used: 'FAISS (Meta\'s open source library)',
             },
             {
               name: 'sqlite-vec',
               full: 'SQLite vector extension',
-              body: 'Adds vector columns and KNN queries to SQLite using a compact shadow-table design. No separate vector database process required.',
+              body: 'A lightweight plugin that adds similarity search to SQLite — a simple, widely-used database format. No separate specialized infrastructure needed, making it great for getting started quickly.',
               used: 'This project (Turso)',
             },
           ].map(({ name, full, body, used }) => (

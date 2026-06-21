@@ -6,7 +6,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from starlette.types import ASGIApp, Receive, Scope, Send
 
-from app.api.routes import auth, progress
+from app.api.routes import auth, progress, users
 from app.core.config import settings
 from app.core.limits import limiter
 from app.db.client import close_client
@@ -28,6 +28,7 @@ class _SecurityHeadersMiddleware:
             if message["type"] == "http.response.start":
                 headers = list(message.get("headers", []))
                 headers.extend([
+                    (b"content-security-policy", b"default-src 'none'; frame-ancestors 'none'; form-action 'self'"),
                     (b"x-content-type-options", b"nosniff"),
                     (b"x-frame-options", b"DENY"),
                     (b"referrer-policy", b"strict-origin-when-cross-origin"),
@@ -59,13 +60,14 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_methods=["GET", "POST", "DELETE"],
     allow_headers=["Authorization", "Content-Type"],
 )
 app.add_middleware(_SecurityHeadersMiddleware)
 
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(progress.router, prefix="/api/progress", tags=["progress"])
+app.include_router(users.router, prefix="/api/users", tags=["users"])
 
 
 @app.get("/health")

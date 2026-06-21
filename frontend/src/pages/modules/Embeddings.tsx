@@ -170,23 +170,25 @@ export function Embeddings({ onComplete, completed }: ModuleProps) {
         </div>
         <h2 className="mb-4 text-4xl font-bold tracking-tight">Embeddings</h2>
         <p className="text-lg text-gray-400 leading-relaxed">
-          Every word, sentence, or document a model processes is first converted into a
-          list of numbers — a vector that encodes meaning as a position in space.
+          Before an AI can understand any word, it converts it into a list of numbers.
+          But these aren't random numbers — words with similar meanings get similar numbers,
+          and that lets the AI do something remarkable: reason about language using math.
         </p>
       </section>
 
       <Section number={1} title="Words as Coordinates">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          An embedding maps a discrete token to a point in a continuous high-dimensional
-          space. The key property: <span className="text-white">meaning encodes as geometry</span>.
-          Words used in similar contexts end up near each other. The model never sees words
-          as letters — only as these learned vectors.
+          Think of embeddings as GPS coordinates for meaning. Each word gets a set of
+          coordinates in a vast space — and words used in similar situations end up near
+          each other. "Dog" and "cat" land close together. "Dog" and "algorithm" are far
+          apart. The model never sees letters at all — only these number coordinates.
+          And because meaning is now geometry, you can do math with it.
         </p>
         <div className="grid grid-cols-3 gap-3 text-xs mb-6">
           {[
-            { title: 'Similarity', body: 'cat and dog are close; cat and algorithm are far apart.' },
-            { title: 'Analogies',  body: 'king − man + woman ≈ queen — encoded as a direction vector.' },
-            { title: 'Arithmetic', body: 'Paris − France + Germany ≈ Berlin. Geography is geometric.' },
+            { title: 'Similarity', body: '"cat" and "dog" land close together; "cat" and "database" are far apart. Closeness = similar meaning.' },
+            { title: 'Analogies',  body: 'king − man + woman ≈ queen. The "royalty" concept is literally a direction in this space.' },
+            { title: 'Arithmetic', body: 'Paris − France + Germany ≈ Berlin. Geographic and cultural relationships show up as math.' },
           ].map(({ title, body }) => (
             <div key={title} className="rounded-xl border border-gray-800 bg-gray-900/40 p-3">
               <p className="font-semibold text-indigo-300 mb-1">{title}</p>
@@ -198,9 +200,9 @@ export function Embeddings({ onComplete, completed }: ModuleProps) {
 
       <Section number={2} title="2D Word Map">
         <p className="mb-3 text-gray-300 leading-relaxed">
-          Real embeddings have hundreds of dimensions. Here, PCA reduces them to 2D —
-          enough to show cluster structure and the king−man+woman=queen analogy.
-          Hover a word to label it. Toggle categories with the buttons. Scroll to zoom.
+          Real word maps have hundreds of dimensions — impossible to draw. Below, we've
+          compressed them into 2D so you can see the clusters and relationships. Hover any
+          dot to see its word. Toggle categories to focus on a group. Scroll to zoom in.
         </p>
 
         {/* Category toggles */}
@@ -233,10 +235,12 @@ export function Embeddings({ onComplete, completed }: ModuleProps) {
 
       <Section number={3} title="How Embeddings Are Learned">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          Word2Vec (2013) learned embeddings by predicting surrounding words from a centre
-          word (or vice versa). Modern transformer models learn contextualised embeddings —
-          the vector for "bank" differs depending on whether the context is financial or
-          geographic. The embedding matrix is typically the first and last layer of the model.
+          Early embedding models (like Word2Vec, 2013) gave every word a single fixed
+          address. Modern AI does something more sophisticated: the word "bank" gets a
+          different embedding depending on what surrounds it — "river bank" ends up in a
+          completely different location than "savings bank." These coordinates are learned
+          automatically during training by reading enormous amounts of text. The model
+          figures out the best location for each word without being told.
         </p>
         <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-4 font-mono text-xs leading-relaxed">
           <p className="text-gray-500 mb-1">// Token → embedding lookup</p>
@@ -245,9 +249,10 @@ export function Embeddings({ onComplete, completed }: ModuleProps) {
           <p className="text-gray-300">  <span className="text-indigo-300">= [0.23, −0.81, 0.55, 0.12, …]</span>  <span className="text-gray-600">// 768 floats for GPT-2</span></p>
         </div>
         <p className="mt-4 text-sm text-gray-500 leading-relaxed">
-          GPT-2 small has a 50,257 × 768 embedding matrix — 38M parameters just in the
-          embedding layer. Every token in the vocabulary gets its own 768-dimensional vector,
-          learned end-to-end alongside the rest of the model.
+          GPT-2 gives each of its 50,257 possible tokens a list of 768 numbers. That's
+          about 38 million numbers just to store the vocabulary — before the model has even
+          started thinking. Those 768 numbers per word are what let the AI understand the
+          rich, context-dependent meaning of language.
         </p>
       </Section>
 

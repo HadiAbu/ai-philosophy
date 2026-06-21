@@ -13,38 +13,49 @@ from app.core.security import (
     hash_token,
     verify_password,
 )
-from app.db.client import get_client
+from app.db.client import db_execute
 from app.models.auth import LoginRequest, RegisterRequest
 
 router = APIRouter()
 
-_COOKIE = {
-    "key": "refresh_token",
-    "httponly": True,
-    "samesite": "strict",
-    "path": "/api/auth",
-}
+_COOKIE_KEY = "refresh_token"
+_COOKIE_PATH = "/api/auth"
 
 
 def _set_refresh_cookie(response: Response, token: str) -> None:
     response.set_cookie(
-        **_COOKIE,
+        key=_COOKIE_KEY,
         value=token,
+        httponly=True,
+        samesite="strict",
+        path=_COOKIE_PATH,
         secure=settings.environment == "production",
         max_age=settings.refresh_token_expire_days * 24 * 60 * 60,
     )
 
 
 def _clear_refresh_cookie(response: Response) -> None:
-    response.delete_cookie(**_COOKIE)
+    response.delete_cookie(
+        key=_COOKIE_KEY,
+        path=_COOKIE_PATH,
+        httponly=True,
+        samesite="strict",
+        secure=settings.environment == "production",
+    )
+
+
+async def _cleanup_tokens(user_id: str) -> None:
+    now = datetime.now(timezone.utc).isoformat()
+    await db_execute(
+        "DELETE FROM refresh_tokens WHERE user_id = ? AND (revoked = 1 OR expires_at < ?)",
+        [user_id, now],
+    )
 
 
 @router.post("/register", status_code=201)
 @limiter.limit("5/minute")
 async def register(request: Request, body: RegisterRequest) -> JSONResponse:
-    client = await get_client()
-
-    result = await client.execute(
+    result = await db_execute(
         "SELECT id FROM users WHERE email = ?", [body.email]
     )
     if result.rows:
@@ -53,7 +64,7 @@ async def register(request: Request, body: RegisterRequest) -> JSONResponse:
     user_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
 
-    await client.execute(
+    await db_execute(
         "INSERT INTO users (id, email, password_hash, created_at) VALUES (?, ?, ?, ?)",
         [user_id, body.email, hash_password(body.password), now],
     )
@@ -65,7 +76,7 @@ async def register(request: Request, body: RegisterRequest) -> JSONResponse:
         + timedelta(days=settings.refresh_token_expire_days)
     ).isoformat()
 
-    await client.execute(
+    await db_execute(
         "INSERT INTO refresh_tokens (token_hash, user_id, expires_at, revoked) VALUES (?, ?, ?, 0)",
         [hashed_refresh, user_id, expires_at],
     )
@@ -80,9 +91,7 @@ async def register(request: Request, body: RegisterRequest) -> JSONResponse:
 @router.post("/login")
 @limiter.limit("10/minute")
 async def login(request: Request, body: LoginRequest) -> JSONResponse:
-    client = await get_client()
-
-    result = await client.execute(
+    result = await db_execute(
         "SELECT id, password_hash FROM users WHERE email = ?", [body.email]
     )
     if not result.rows or not verify_password(
@@ -91,6 +100,9 @@ async def login(request: Request, body: LoginRequest) -> JSONResponse:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     user_id = result.rows[0]["id"]
+
+    await _cleanup_tokens(user_id)
+
     access_token = create_access_token(user_id)
     raw_refresh, hashed_refresh = create_refresh_token()
     expires_at = (
@@ -98,7 +110,7 @@ async def login(request: Request, body: LoginRequest) -> JSONResponse:
         + timedelta(days=settings.refresh_token_expire_days)
     ).isoformat()
 
-    await client.execute(
+    await db_execute(
         "INSERT INTO refresh_tokens (token_hash, user_id, expires_at, revoked) VALUES (?, ?, ?, 0)",
         [hashed_refresh, user_id, expires_at],
     )
@@ -109,12 +121,13 @@ async def login(request: Request, body: LoginRequest) -> JSONResponse:
 
 
 @router.post("/logout")
+@limiter.limit("20/minute")
 async def logout(
+    request: Request,
     refresh_token: str | None = Cookie(default=None),
 ) -> JSONResponse:
     if refresh_token:
-        client = await get_client()
-        await client.execute(
+        await db_execute(
             "UPDATE refresh_tokens SET revoked = 1 WHERE token_hash = ?",
             [hash_token(refresh_token)],
         )
@@ -133,10 +146,9 @@ async def refresh(
     if not refresh_token:
         raise HTTPException(status_code=401, detail="No refresh token")
 
-    client = await get_client()
     token_hash = hash_token(refresh_token)
 
-    result = await client.execute(
+    result = await db_execute(
         "SELECT user_id, expires_at, revoked FROM refresh_tokens WHERE token_hash = ?",
         [token_hash],
     )
@@ -154,9 +166,11 @@ async def refresh(
 
     user_id = row["user_id"]
 
-    await client.execute(
+    await db_execute(
         "UPDATE refresh_tokens SET revoked = 1 WHERE token_hash = ?", [token_hash]
     )
+
+    await _cleanup_tokens(user_id)
 
     new_raw, new_hashed = create_refresh_token()
     new_expires = (
@@ -164,7 +178,7 @@ async def refresh(
         + timedelta(days=settings.refresh_token_expire_days)
     ).isoformat()
 
-    await client.execute(
+    await db_execute(
         "INSERT INTO refresh_tokens (token_hash, user_id, expires_at, revoked) VALUES (?, ?, ?, 0)",
         [new_hashed, user_id, new_expires],
     )
