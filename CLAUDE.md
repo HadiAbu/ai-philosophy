@@ -329,9 +329,7 @@ const containerH = wrapRef.current?.clientHeight ?? window.innerHeight
 
 This reads a ref in the render function to determine tooltip placement. ESLint correctly flags it: ref values aren't reactive, so the tooltip can misplace after a window resize. The fix is a `ResizeObserver` that writes to state. This was left unfixed intentionally — the tooltip placement works correctly on first hover, and resize-after-hover is an edge case. If you're in this file for another reason, this is worth fixing at the same time.
 
-**No tests**: pytest is not installed and there are no test files. The CI workflow skips tests if `backend/tests/` doesn't exist. This is the biggest gap in the project's reliability.
-
-**CI branch mismatch**: `.github/workflows/backend.yml` and `frontend.yml` target `main`, but the default branch is `master`. The CI deploy jobs will not trigger until these are aligned. Either rename the branch or update the workflow `branches:` keys.
+**CI branch mismatch**: fixed — both workflows now target `master`.
 
 ---
 
@@ -343,5 +341,5 @@ This reads a ref in the render function to determine tooltip placement. ESLint c
 - User-provided API key for live LLM responses in the prompt engineering module
 - Social / community features
 - Fine-tuning interactive trainer (currently the module is explanatory; a live LoRA demo would be the v2 upgrade)
-- Tests (both backend pytest suite and frontend Vitest)
+- Frontend Vitest tests (backend pytest suite now exists)
 - Upgrade from `libsql-client` to the official `libsql` Python SDK
