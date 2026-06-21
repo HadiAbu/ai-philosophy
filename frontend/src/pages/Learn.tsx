@@ -21,6 +21,7 @@ const MODULES = {
   'prompt-engineering': lazy(() => import('./modules/PromptEngineering').then(m => ({ default: m.PromptEngineering }))),
   'hallucinations':     lazy(() => import('./modules/Hallucinations').then(m => ({ default: m.Hallucinations }))),
   'use-cases':          lazy(() => import('./modules/UseCases').then(m => ({ default: m.UseCases }))),
+  'fine-tuning':        lazy(() => import('./modules/FineTuning').then(m => ({ default: m.FineTuning }))),
 } as const
 
 type ModuleId = keyof typeof MODULES

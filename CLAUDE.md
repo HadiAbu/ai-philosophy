@@ -91,7 +91,8 @@ what-is-ai (always available)
     ├── activations     (unlocks when: neural-networks complete)
     └── transformers    (unlocks when: neural-networks complete)
         ├── attention       (unlocks when: transformers complete)
-        └── tokenization    (unlocks when: transformers complete)
+        ├── tokenization    (unlocks when: transformers complete)
+        └── fine-tuning     (unlocks when: transformers complete)
             └── rag         (unlocks when: tokenization complete)
                 ├── embeddings          (unlocks when: rag complete)
                 ├── retrieval           (unlocks when: rag complete)
@@ -124,6 +125,7 @@ Each module is a React component at `frontend/src/pages/modules/<Name>.tsx`. The
 | `neural-networks` | NeuralNetworks.tsx | Weight sliders, forward pass SVG, activation chart, XOR TF.js demo |
 | `activations` | Activations.tsx | Function curve explorer with input scrubber |
 | `transformers` | Transformers.tsx | Architecture diagram |
+| `fine-tuning` | FineTuning.tsx | Approach card explorer (Full FT / LoRA / Instruction / RLHF), fine-tuning vs RAG comparison table |
 | `attention` | Attention.tsx | Precomputed attention heatmap, sentence selector |
 | `tokenization` | Tokenization.tsx | Live BPE tokenizer (client-side) |
 | `rag` | RAG.tsx | Pipeline animation, document retrieval demo |
@@ -274,6 +276,7 @@ aiphilosophy/
 │   │   │   │   ├── NeuralNetworks.tsx
 │   │   │   │   ├── Activations.tsx
 │   │   │   │   ├── Transformers.tsx
+│   │   │   │   ├── FineTuning.tsx
 │   │   │   │   ├── Attention.tsx
 │   │   │   │   ├── Tokenization.tsx
 │   │   │   │   ├── RAG.tsx
@@ -339,6 +342,6 @@ This reads a ref in the render function to determine tooltip placement. ESLint c
 - Email verification on register
 - User-provided API key for live LLM responses in the prompt engineering module
 - Social / community features
-- Fine-tuning demos
+- Fine-tuning interactive trainer (currently the module is explanatory; a live LoRA demo would be the v2 upgrade)
 - Tests (both backend pytest suite and frontend Vitest)
 - Upgrade from `libsql-client` to the official `libsql` Python SDK

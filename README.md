@@ -17,6 +17,7 @@ The 13 modules form a dependency graph — each one unlocks the next. Start with
 | Neural Networks | Perceptrons, layers, the forward pass, XOR problem | Weight sliders, live network, TensorFlow.js XOR trainer |
 | Activations | ReLU, Sigmoid, Tanh, GeLU — why non-linearity matters | Live curve explorer |
 | Transformers | The architecture behind GPT, Claude, Gemini | Architecture diagram |
+| Fine-Tuning | Adapting a pre-trained model to a specific task; LoRA, RLHF, instruction tuning | Approach explorer, fine-tuning vs RAG comparison |
 | Attention | How models focus on context; Q/K/V; multi-head attention | Attention heatmap |
 | Tokenization | BPE tokenization; why AI never reads full words | Live tokenizer |
 | RAG | Retrieval-Augmented Generation pipeline end-to-end | Pipeline animation |
@@ -35,8 +36,8 @@ The 13 modules form a dependency graph — each one unlocks the next. Start with
       [Types of ML]            [Neural Networks]
                                /              \
                        [Activations]      [Transformers]
-                                          /            \
-                                   [Attention]    [Tokenization]
+                                        /      |       \
+                              [Attention] [Tokenization] [Fine-Tuning]
                                                        |
                                                      [RAG]
                                                /      |      \

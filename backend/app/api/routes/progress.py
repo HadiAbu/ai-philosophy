@@ -10,7 +10,7 @@ router = APIRouter()
 
 _VALID_NODES = {
     "what-is-ai", "types-of-ml", "neural-networks", "activations",
-    "transformers", "attention", "tokenization", "rag", "embeddings", "retrieval",
+    "transformers", "attention", "tokenization", "fine-tuning", "rag", "embeddings", "retrieval",
     "prompt-engineering", "hallucinations", "use-cases",
 }
 

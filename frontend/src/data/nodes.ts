@@ -64,7 +64,17 @@ export const NODES: ConceptNode[] = [
     x: 850, y: 600,
     available: false,
     unlockedBy: ['neural-networks'],
-    connections: ['attention', 'tokenization'],
+    connections: ['attention', 'tokenization', 'fine-tuning'],
+  },
+  {
+    id: 'fine-tuning',
+    label: 'Fine-Tuning',
+    description: 'Adapting a pre-trained model to a specific task or domain',
+    icon: '🎛️',
+    x: 1300, y: 760,
+    available: false,
+    unlockedBy: ['transformers'],
+    connections: [],
   },
   {
     id: 'attention',
