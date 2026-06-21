@@ -280,16 +280,18 @@ export function Tokenization({ onComplete, completed }: ModuleProps) {
 
       <Section number={1} title="Why Not Words or Characters?">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          The obvious choices fail in opposite ways. Word-level tokenization requires a
-          vocabulary of hundreds of thousands of words (and still can't handle typos,
-          new words, or most of the world's languages). Character-level is tiny but forces
-          the model to figure out that "c", "a", "t" means cat — a much harder job.
+          You might think: just split the text into individual words. But English alone has
+          hundreds of thousands of words — and new slang, typos, and technical terms appear
+          every day. The vocabulary would be unmanageably large, and the AI still couldn't
+          handle anything it hadn't seen before. The opposite approach — splitting into
+          individual letters — keeps the vocabulary tiny but forces the AI to figure out
+          that c + a + t means cat, which is a much harder problem. Neither extreme works.
         </p>
         <div className="grid grid-cols-3 gap-3 text-xs">
           {[
-            { approach: 'Characters', vocab: '~256', pro: 'handles any input', con: 'sequences get very long; hard to learn meaning' },
-            { approach: 'Words', vocab: '~100k+', pro: 'natural units', con: 'fails on rare words, typos, new terms' },
-            { approach: 'Subwords', vocab: '~50k', pro: 'best of both worlds', con: 'requires learning the merge rules', highlight: true },
+            { approach: 'Characters', vocab: '~256', pro: 'Handles any input — even typos and made-up words', con: 'Very long sequences; the AI has to rediscover what words mean from scratch' },
+            { approach: 'Words', vocab: '~100k+', pro: 'Natural, human-readable units', con: 'Can\'t handle typos, new words, or uncommon terms it hasn\'t seen' },
+            { approach: 'Subwords', vocab: '~50k', pro: 'Best of both: common words stay whole, rare words split into familiar pieces', con: 'Requires a training step to learn the best splits', highlight: true },
           ].map(({ approach, vocab, pro, con, highlight }) => (
             <div key={approach} className={`rounded-xl border p-3 ${highlight ? 'border-indigo-700 bg-indigo-950/40' : 'border-gray-800 bg-gray-900/30'}`}>
               <p className={`font-semibold mb-1 ${highlight ? 'text-indigo-300' : 'text-gray-300'}`}>{approach}</p>
@@ -303,33 +305,41 @@ export function Tokenization({ onComplete, completed }: ModuleProps) {
 
       <Section number={2} title="Byte Pair Encoding">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          BPE starts with single characters and iteratively merges the most frequent adjacent
-          pair into a new token. After enough merges, common words become single tokens while
-          rare words are split into recognisable parts.
+          BPE (Byte Pair Encoding) finds the clever middle ground. It starts with individual
+          letters, then repeatedly glues together the most common pairs. "lower" starts as
+          l, o, w, e, r. Then "lo" gets merged because it appears a lot. Then "low". Then
+          "er". Now "lower" is just two pieces instead of five letters. Common words like
+          "the" end up as a single chunk. Rarer words like "sesquipedalian" get split into
+          recognizable parts. Step through the example below to watch it work.
         </p>
         <BPESteps />
         <p className="mt-4 text-sm text-gray-500 leading-relaxed">
-          GPT-2 runs this process until it has exactly 50,257 tokens. Common words like{' '}
-          <span className="font-mono text-gray-300">" the"</span> are single tokens;{' '}
-          <span className="font-mono text-gray-300">"tokenization"</span> splits into{' '}
-          <span className="font-mono text-gray-300">["token", "##ization"]</span>.
+          GPT-2 learned exactly 50,257 of these chunks. Common words like{' '}
+          <span className="font-mono text-gray-300">" the"</span> are a single token.
+          Longer or rarer words get split up — for example,{' '}
+          <span className="font-mono text-gray-300">"tokenization"</span> becomes{' '}
+          <span className="font-mono text-gray-300">["token", "##ization"]</span>{' '}
+          (the ## marks a continuation piece).
         </p>
       </Section>
 
       <Section number={3} title="Try It">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          Type any text. Each chip is one token — hover to see its ID. Notice how common words
-          land in a single chip, while unusual words split into subword pieces (shown with{' '}
-          <span className="font-mono text-gray-300">##</span> prefix).
+          Type anything below and watch it get split into tokens in real time. Each coloured
+          chip is one token. Common words usually stay in one piece. Less common words split
+          into smaller parts (marked with <span className="font-mono text-gray-300">##</span>).
+          Hover any token to see the number the AI actually uses for it.
         </p>
         <TokenizerDemo />
       </Section>
 
       <Section number={4} title="Tokens Are Numbers">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          Models don't see text — they see integer IDs. Each token ID maps to a row in
-          the embedding matrix, which converts it to the vector the model actually processes.
-          The entire vocabulary fits in a lookup table; the model never reads raw characters.
+          Here's the part most people don't realise: the AI never actually reads words.
+          Every token gets replaced with a number (its ID), and that number is looked up
+          in a giant table to retrieve a list of numbers that represent its meaning. From
+          that point on, it's all math. The example below shows exactly what that conversion
+          looks like step by step.
         </p>
         <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-4 font-mono text-sm">
           <p className="text-gray-500 mb-2">// Input to a language model</p>

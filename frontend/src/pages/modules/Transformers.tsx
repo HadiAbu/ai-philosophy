@@ -227,49 +227,53 @@ export function Transformers({ onComplete, completed }: ModuleProps) {
         </div>
         <h2 className="mb-4 text-4xl font-bold tracking-tight">Transformers</h2>
         <p className="text-lg text-gray-400 leading-relaxed">
-          The architecture that made GPT, BERT, and every modern language model possible —
-          by replacing sequential processing with parallel attention.
+          The design behind ChatGPT, Claude, Gemini, and every other modern AI chatbot.
+          One key idea — looking at all words at once instead of one at a time —
+          changed everything.
         </p>
       </section>
 
       <Section number={1} title="The Problem with Sequences">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          Before transformers, language models used RNNs: they processed words one at a time,
-          left to right, passing a hidden state forward. This made them slow to train (no
-          parallelism) and terrible at relating words that were far apart — the gradient
-          signal fades over distance.
+          Before 2017, AI language models read sentences like someone scanning with a finger,
+          covering everything except the current word. By the time they reached a word near
+          the end of a long sentence, they had mostly forgotten what came at the start. This
+          made them slow to train and bad at understanding context that spans long distances.
         </p>
         <SequenceDiagram />
         <p className="mt-4 text-gray-300 leading-relaxed">
-          Transformers (Vaswani et al., 2017) scrapped the sequential bottleneck entirely.
-          Every token looks at every other token simultaneously — and the relationships are
-          learned, not hard-coded.
+          In 2017, a paper called "Attention Is All You Need" introduced transformers. The
+          key insight: instead of reading word by word, look at the entire sentence at once
+          and immediately consider how every word relates to every other. This one change
+          made modern AI chatbots possible.
         </p>
       </Section>
 
       <Section number={2} title="Words Live in Space">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          Before a transformer can process words, it turns them into vectors — lists of
-          numbers that encode meaning. Semantically similar words end up near each other in
-          this high-dimensional space. When we project down to 2D, structure emerges: animals
-          cluster together, food clusters, and abstract relationships like{' '}
-          <span className="font-mono text-indigo-300">king − man + woman ≈ queen</span>{' '}
-          appear as consistent direction vectors.
+          Computers can't understand words the way we do — they only work with numbers.
+          So before anything else, a transformer converts every word into a list of numbers.
+          But here's the remarkable part: words with similar meanings end up with similar
+          numbers. Think of it as a map where related ideas live near each other. Animals
+          cluster in one area, food in another, and even abstract relationships show up —
+          the numbers for <span className="font-mono text-indigo-300">king − man + woman</span>{' '}
+          land almost exactly on <span className="font-mono text-indigo-300">queen</span>.
         </p>
         <WordScatter />
         <p className="mt-4 text-sm text-gray-500 leading-relaxed">
-          Real embedding spaces have hundreds or thousands of dimensions. The 2D view
-          compresses that structure via PCA — some detail is lost, but the clusters and
-          analogies survive. You'll explore this fully in the Embeddings node.
+          In reality, words are positioned in a space with hundreds of dimensions — far too
+          many to draw. The scatter above squishes all of that down to 2D so you can see
+          the clusters and relationships. The Embeddings chapter goes much deeper on this.
         </p>
       </Section>
 
       <Section number={3} title="Inside a Transformer Block">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          A transformer is built from identical blocks stacked N times (12 in GPT-2 small,
-          96 in GPT-4). Each block has two parts: a self-attention layer (lets tokens
-          communicate) and a feed-forward network (processes each token independently).
-          Residual connections and layer norm keep training stable.
+          A transformer is built by stacking identical blocks on top of each other — 12 in
+          GPT-2, around 96 in GPT-4. Each block does two things: first, it lets every word
+          look at every other word and decide how relevant they are (the attention step).
+          Then it processes each word independently through its own small network. The deeper
+          the stack, the more refined and nuanced the model's understanding becomes.
         </p>
         <TransformerBlock />
       </Section>
@@ -278,19 +282,19 @@ export function Transformers({ onComplete, completed }: ModuleProps) {
         <div className="grid gap-4 sm:grid-cols-3">
           {[
             {
-              title: 'Parallelism',
+              title: 'Speed',
               icon: '⚡',
-              body: 'All tokens attend to all others simultaneously, making full use of GPU parallelism during training.',
+              body: 'All words are processed at the same time, not one by one. This makes training dramatically faster and lets us build much larger models.',
             },
             {
-              title: 'Long-range deps',
+              title: 'Long-range understanding',
               icon: '🔗',
-              body: 'A token at position 1 and position 500 attend to each other with the same ease as adjacent tokens.',
+              body: 'A word at the start of a long document can directly attend to a word near the end. Distance doesn\'t matter — every word can reach every other.',
             },
             {
               title: 'Scale',
               icon: '📈',
-              body: 'More layers, more heads, more parameters → reliably better performance. No other architecture has scaled this cleanly.',
+              body: 'The more layers, the smarter the model. Transformers keep getting better as you make them larger — no other AI design has scaled this reliably.',
             },
           ].map(({ title, icon, body }) => (
             <div key={title} className="rounded-xl border border-gray-800 bg-gray-900/40 p-4">

@@ -271,25 +271,25 @@ const PATTERNS = [
     name: 'Role assignment',
     template: 'You are a [ROLE] with [X years] of experience in [DOMAIN]. [Task].',
     example: 'You are a senior data scientist with 10 years of experience in NLP. Review this text classification pipeline and identify bottlenecks.',
-    when: 'When you need domain expertise tone — code review, medical writing, legal analysis.',
+    when: 'When you want the AI to respond like an expert — code review, medical questions, legal analysis, financial advice.',
   },
   {
     name: 'Output format',
     template: 'Respond in [FORMAT]. Include: [FIELD 1], [FIELD 2], [FIELD 3].',
     example: 'Respond in JSON with keys: title (string), summary (1 sentence), sentiment (positive/negative/neutral), confidence (0-1).',
-    when: 'When you need to parse or display the output programmatically.',
+    when: 'When you need the output in a specific shape — to paste into a spreadsheet, load into an app, or display consistently.',
   },
   {
     name: 'Delimited input',
     template: 'Here is the [CONTENT TYPE] delimited by triple backticks:\n```\n[CONTENT]\n```\n[Task].',
     example: 'Here is the customer review delimited by triple backticks:\n```\nThe battery life is terrible.\n```\nIdentify the main complaint in one sentence.',
-    when: 'When the input is untrusted user text — delimiters prevent prompt injection.',
+    when: 'When passing in content from elsewhere (a review, an article, some code) so the AI knows exactly where your input ends and your instructions begin.',
   },
   {
     name: 'Step-back prompting',
     template: 'Before answering, first state the general principle behind this problem. Then apply it.',
     example: 'Before answering, first state what type of algorithm would be optimal for this data size. Then recommend a specific one with justification.',
-    when: 'Complex technical or reasoning questions where the model needs to ground itself first.',
+    when: 'When the answer depends on understanding a broader concept first — asking the AI to state the principle before applying it often leads to much better answers.',
   },
 ]
 
@@ -338,49 +338,55 @@ export function PromptEngineering({ onComplete, completed }: ModuleProps) {
         </div>
         <h2 className="mb-4 text-4xl font-bold tracking-tight">Prompt Engineering</h2>
         <p className="text-lg text-gray-400 leading-relaxed">
-          The way you frame a question determines the quality of the answer.
-          Prompt engineering is the skill of writing instructions that reliably
-          get useful output from a language model.
+          The way you ask a question completely changes the answer you get back.
+          Prompt engineering is the skill of writing clear, specific instructions
+          that reliably get great results from an AI.
         </p>
       </section>
 
       <Section number={1} title="Anatomy of a Prompt">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          A modern LLM interaction has up to four layers. The model sees all of
-          them as a single token sequence — but understanding each layer helps
-          you control the output precisely.
+          When you type a message to an AI, your words aren't the only thing shaping
+          the response. A full conversation has up to four distinct parts stacked on top
+          of each other — and understanding what each one does gives you much more control
+          over what you get back. Hover each block below to learn what it does.
         </p>
         <AnatomyDiagram />
       </Section>
 
       <Section number={2} title="Bad vs Good Prompts">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          The difference between a generic and a targeted prompt is usually
-          specificity: format, audience, constraints, and examples. Toggle
-          between bad and good to see the impact on output quality.
+          Vague prompts get vague answers. Specific prompts get specific answers.
+          The biggest improvements come from adding a format, defining who the
+          audience is, and giving constraints. Toggle between "bad" and "good"
+          below to see exactly what changes and why it matters.
         </p>
         <BadGood />
       </Section>
 
       <Section number={3} title="Chain-of-Thought Prompting">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          Adding <span className="font-mono text-indigo-300">"Let's think step by step"</span> (or any explicit
-          reasoning instruction) forces the model to write out its work. For
-          multi-step maths and logic, this consistently produces correct answers
-          that direct prompting misses.
+          Here's a simple trick that dramatically improves accuracy on math and
+          logic problems: ask the AI to show its work before giving the answer.
+          Adding{' '}
+          <span className="font-mono text-indigo-300">"Let's think step by step"</span>{' '}
+          forces it to write out each step, which naturally catches mistakes it
+          would otherwise skip over. Try switching between the two approaches below.
         </p>
         <ChainOfThought />
         <p className="mt-3 text-sm text-gray-500">
-          Chain-of-thought works because the model uses the generated reasoning
-          tokens as additional context for the next token — it literally "thinks
-          on paper."
+          This works because each step the AI writes down becomes context that
+          helps it figure out the next step. It's essentially thinking out loud —
+          and the act of writing the intermediate steps prevents it from jumping
+          to a wrong conclusion.
         </p>
       </Section>
 
       <Section number={4} title="Reusable Prompt Patterns">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          A handful of patterns cover the majority of use cases. Each has a
-          template you can adapt and a specific situation where it shines.
+          Most of what makes prompts work comes down to a small set of reusable
+          patterns. Once you learn these, you can apply them to almost any task
+          — no technical knowledge required.
         </p>
         <PromptPatterns />
       </Section>

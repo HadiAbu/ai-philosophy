@@ -219,16 +219,18 @@ function ClassifyDemo() {
 
       <div className="flex rounded-lg overflow-hidden border border-gray-800 w-fit">
         <button onClick={() => setMode('zero')}
-          className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+          className={`px-3 py-2 text-xs font-medium transition-colors leading-none text-left ${
             mode === 'zero' ? 'bg-gray-700 text-white' : 'text-gray-500 hover:text-gray-300'
           }`}>
           Zero-shot
+          <span className="block text-[9px] font-normal opacity-60 mt-0.5">no examples given</span>
         </button>
         <button onClick={() => setMode('few')}
-          className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+          className={`px-3 py-2 text-xs font-medium transition-colors leading-none text-left ${
             mode === 'few' ? 'bg-indigo-700 text-white' : 'text-gray-500 hover:text-gray-300'
           }`}>
           Few-shot
+          <span className="block text-[9px] font-normal opacity-60 mt-0.5">with examples</span>
         </button>
       </div>
 
@@ -246,8 +248,8 @@ function ClassifyDemo() {
 
       <div className="border-t border-white/5 pt-3 text-xs text-gray-600">
         {mode === 'zero'
-          ? 'Zero-shot: no examples given. The model uses its training to infer the category.'
-          : 'Few-shot: 3 labelled examples prepended to the prompt. The model learns the specific taxonomy from context.'}
+          ? 'No examples given — the AI uses everything it learned during training to decide the category.'
+          : '3 labelled examples were added to the prompt before your input — the AI learns your specific categories from those.'}
       </div>
     </div>
   )
@@ -275,60 +277,68 @@ export function UseCases({ onComplete, completed }: ModuleProps) {
         </div>
         <h2 className="mb-4 text-4xl font-bold tracking-tight">Use Cases</h2>
         <p className="text-lg text-gray-400 leading-relaxed">
-          Knowing how AI works is step one. Knowing when to reach for it — and
-          what tasks it genuinely excels at — is what makes the difference in
-          practice.
+          Understanding how AI works is the foundation. But knowing where it's
+          most useful — and where it falls short — is what turns that knowledge
+          into a practical skill you can actually use every day.
         </p>
       </section>
 
       <Section number={1} title="Code Generation & Debugging">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          Code is one of the highest-ROI uses of LLMs. The model's output is
-          immediately testable, which limits the hallucination risk. Effective
-          prompts specify the language, constraints, and edge cases upfront.
+          Writing code is one of the most useful things you can do with an AI.
+          Unlike asking for facts (which you can't easily verify), code can be
+          tested immediately — if it breaks, you'll know. The more specific you
+          are — which programming language, any limitations, what should happen
+          in edge cases — the better the result.
         </p>
         <CodeDemo />
         <p className="mt-3 text-sm text-gray-500">
-          Best practice: always run generated code before using it. LLMs
-          confidently produce code that compiles but has subtle logic errors.
-          Treat it as a fast first draft.
+          Always run AI-generated code before relying on it. It often looks
+          correct but contains subtle mistakes that only show up when it actually
+          runs. Think of it as a fast first draft that still needs your review.
         </p>
       </Section>
 
       <Section number={2} title="Summarisation">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          Summarisation is ideal for LLMs because it's verifiable — you have
-          the source. Specify the format and audience to get output you can
-          actually use without editing.
+          Summarising long documents is something AI does extremely well, and
+          it's one of the safest uses — because you already have the original,
+          you can check whether the summary got it right. The key is telling
+          the AI exactly what format you want and who the summary is for.
         </p>
         <SummaryDemo />
         <p className="mt-3 text-sm text-gray-500">
-          LLMs summarise by weighting frequent and prominent concepts. They
-          can miss nuance or misrepresent conditional statements ("X is true
-          only if Y" can collapse to "X is true"). Always check the source
-          before publishing a model summary.
+          AI summaries tend to focus on what's mentioned most often in a text.
+          They can miss nuance or flatten conditional statements — for example,
+          "X is only true in certain cases" can become just "X is true." Always
+          glance at the original before you share a summary.
         </p>
       </Section>
 
       <Section number={3} title="Classification">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          Classification tasks — assigning text to predefined categories — are
-          a strong fit. Zero-shot works well for intuitive categories; few-shot
-          examples let you define a custom taxonomy without fine-tuning.
+          Classification means reading a piece of text and putting it in a
+          bucket — positive or negative, complaint or compliment, urgent or not.
+          AI is very good at this. You can ask it to classify without giving any
+          examples first ("zero-shot"), or give it a few examples of what each
+          category looks like ("few-shot") to get more precise results. Toggle
+          between them below to see the difference.
         </p>
         <ClassifyDemo />
         <p className="mt-3 text-sm text-gray-500">
-          For production classification at scale, a purpose-built fine-tuned
-          model will outperform a prompted LLM and cost far less per call. Use
-          LLM classification for prototyping or low-volume tasks.
+          For one-off or low-volume tasks, a general AI model works great for
+          classification. If you need to classify millions of items automatically
+          — like moderating social media posts — a model trained specifically for
+          that one task will be faster and much cheaper.
         </p>
       </Section>
 
       <Section number={4} title="The Full Landscape">
         <p className="mb-4 text-gray-300 leading-relaxed">
           Code, summarisation, and classification are the most common starting
-          points — but LLMs are broadly useful for any task involving text
-          transformation.
+          points. But almost any task that involves reading, writing, or
+          transforming text is something you can try with an AI. Here's a quick
+          map of the most popular ones.
         </p>
         <div className="grid gap-3 sm:grid-cols-2">
           {USE_CASE_SUMMARY.map(({ icon, name, uses }) => (

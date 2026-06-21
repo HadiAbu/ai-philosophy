@@ -25,16 +25,16 @@ const PARADIGMS = [
     icon: '🏷',
     color: '#818cf8',
     bg: 'bg-indigo-950/50 border-indigo-800/60',
-    tagline: 'Learn from labelled examples.',
+    tagline: 'Learn from examples that already have the right answers.',
     definition:
-      'The training set contains input–output pairs. The model learns a mapping from input to output by minimising its prediction errors across the labelled examples.',
-    training: 'Loss = distance between predicted label and true label. Minimise with gradient descent.',
+      'You give the AI thousands of examples that include both the input and the correct answer. It figures out the pattern connecting them. Once trained, it can predict the right answer for inputs it has never seen before.',
+    training: 'The AI checks its guess against the correct answer, measures how wrong it was, and adjusts. This repeats millions of times until it gets consistently accurate.',
     examples: [
       { task: 'Spam detection', input: 'Email text', output: 'Spam / Not spam' },
       { task: 'Image classification', input: 'Photo', output: 'Cat / Dog / Car…' },
       { task: 'House price prediction', input: 'Size, location, rooms', output: 'Price (number)' },
     ],
-    when: 'You have labelled data and a clear target variable.',
+    when: 'You have lots of examples with known correct answers, and you want to predict the same thing for new inputs.',
   },
   {
     key: 'unsupervised',
@@ -42,16 +42,16 @@ const PARADIGMS = [
     icon: '🔍',
     color: '#34d399',
     bg: 'bg-emerald-950/40 border-emerald-900/40',
-    tagline: 'Find hidden structure without labels.',
+    tagline: 'Find hidden patterns without telling it what to look for.',
     definition:
-      'Only inputs are provided — no labels. The model discovers patterns, groupings, or compressed representations on its own.',
-    training: 'No loss function in the supervised sense. Optimise for cluster cohesion, reconstruction error, or log-likelihood.',
+      'You give the AI raw data with no labels at all — no right answers. It explores on its own and discovers groups, similarities, and structure that you might not have known were there.',
+    training: 'The AI figures out its own sense of "similar" and "different." It looks for things that naturally cluster together, or tries to compress the data into a simpler form.',
     examples: [
       { task: 'Customer segmentation', input: 'Purchase history', output: 'Cluster A / B / C' },
       { task: 'Anomaly detection', input: 'Server metrics', output: 'Normal / Anomalous' },
       { task: 'Topic modelling', input: 'News articles', output: 'Latent topics' },
     ],
-    when: 'No labels available, or you want to explore the data\'s structure.',
+    when: 'You have lots of data but no labels, or you want to discover groups and patterns you didn\'t know to look for.',
   },
   {
     key: 'reinforcement',
@@ -59,16 +59,16 @@ const PARADIGMS = [
     icon: '🎮',
     color: '#f59e0b',
     bg: 'bg-amber-950/40 border-amber-900/40',
-    tagline: 'Learn by trial, error, and reward.',
+    tagline: 'Learn by trying things and seeing what works.',
     definition:
-      'An agent takes actions in an environment and receives scalar rewards. It learns a policy that maximises cumulative future reward — no labelled data required.',
-    training: 'Maximise expected cumulative reward (return). Policy gradient or Q-learning updates the agent\'s decision rule.',
+      'An AI agent takes actions, sees what happens, and gets points for good outcomes. Over time, it learns which actions lead to better scores. It\'s how AI learns to play games, control robots, and make sequences of decisions.',
+    training: 'The AI tries random things at first, then gradually learns to do more of what earned rewards. It\'s slow — potentially needing millions of tries — but requires no pre-labelled data.',
     examples: [
       { task: 'Game playing', input: 'Game state', output: 'Action (move, jump…)' },
       { task: 'Robot control', input: 'Sensor readings', output: 'Motor commands' },
       { task: 'LLM alignment (RLHF)', input: 'Model output', output: 'Human preference score' },
     ],
-    when: 'The task is sequential, rewards are sparse, and you can simulate the environment.',
+    when: 'The task involves making a series of decisions, and you can simulate the environment to let the AI practice.',
   },
 ]
 
@@ -143,7 +143,7 @@ const CLASS_COLORS = ['#818cf8', '#34d399']
 const CLASS_LABELS = ['Class A', 'Class B']
 
 // Simple linear decision boundary: x > 0.48 → class 1
-function classify(x: number, _y: number): number {
+function classify(x: number): number {
   return x > 0.48 ? 1 : 0
 }
 
@@ -164,7 +164,7 @@ function SupervisedDemo() {
     setQuery({ x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, y)) })
   }
 
-  const pred = query ? classify(query.x, query.y) : null
+  const pred = query ? classify(query.x) : null
 
   // Decision boundary x = 0.48
   const bx = toSx(0.48)
@@ -234,11 +234,11 @@ function SupervisedDemo() {
 // ─── 3. Comparison table ──────────────────────────────────────────────────────
 
 const TABLE_ROWS = [
-  { aspect: 'Data needed', sup: 'Labelled (input + correct output)', uns: 'Unlabelled (input only)', rl: 'None upfront — generated by interacting' },
-  { aspect: 'Label cost', sup: 'High — humans must annotate', uns: 'None', rl: 'Reward signal must be engineered' },
-  { aspect: 'Goal', sup: 'Predict a target variable accurately', uns: 'Discover structure or compress data', rl: 'Maximise cumulative reward over time' },
-  { aspect: 'Output type', sup: 'Fixed labels or numbers', uns: 'Clusters, embeddings, reconstructions', rl: 'Policy (action per state)' },
-  { aspect: 'Real examples', sup: 'GPT fine-tuning, spam filters, vision', uns: 'K-means, PCA, autoencoders, LLM pre-train', rl: 'AlphaGo, robot locomotion, RLHF' },
+  { aspect: 'Data needed', sup: 'Labelled — you need examples with correct answers', uns: 'Unlabelled — raw data, no answers needed', rl: 'No data upfront — AI generates its own through practice' },
+  { aspect: 'Effort to prepare', sup: 'High — someone must label each example', uns: 'Low — just collect the raw data', rl: 'Medium — you must define what counts as a "reward"' },
+  { aspect: 'Goal', sup: 'Predict the right answer for new inputs', uns: 'Discover groups and patterns in the data', rl: 'Learn the best sequence of actions to maximise a score' },
+  { aspect: 'Output type', sup: 'A label (spam/not spam) or a number (price)', uns: 'Groups, summaries, or compressed representations', rl: 'A strategy: "in situation X, do action Y"' },
+  { aspect: 'Real examples', sup: 'Spam filters, image recognition, ChatGPT fine-tuning', uns: 'Customer grouping, topic detection, anomaly alerts', rl: 'AlphaGo, robot control, AI alignment (RLHF)' },
 ]
 
 function ComparisonTable() {
@@ -279,38 +279,40 @@ export function TypesOfML({ onComplete, completed }: ModuleProps) {
         </div>
         <h2 className="mb-4 text-4xl font-bold tracking-tight">Types of ML</h2>
         <p className="text-lg text-gray-400 leading-relaxed">
-          Not all machine learning looks alike. The three paradigms — supervised,
-          unsupervised, and reinforcement — differ fundamentally in how the model
-          receives feedback and what it learns to do.
+          Not all AI learns the same way. There are three main approaches — and
+          knowing which one fits your situation changes everything about what data
+          you need and what results you can expect.
         </p>
       </section>
 
       <Section number={1} title="The Three Paradigms">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          The paradigm determines everything: what data you need, how training
-          works, and what kind of output you can expect.
+          Think of it like three different ways a student can learn. Click each approach
+          to see how it works, what kind of examples it needs, and where it's used in
+          the real world.
         </p>
         <ParadigmSwitcher />
       </Section>
 
       <Section number={2} title="Supervised Learning in Depth">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          Supervised learning is the most common paradigm in industry. The model
-          learns to separate data into classes based on labeled training examples.
-          After training, it applies the learned boundary to new, unseen points.
+          Supervised learning is the most widely used type of AI in business today.
+          The scatter plot below shows a simple example: 12 labeled training points
+          (dots) and the line the AI learned to separate them. Click anywhere on
+          the chart to see how the AI classifies a new point it has never seen.
         </p>
         <SupervisedDemo />
         <p className="mt-3 text-sm text-gray-500">
-          This toy example uses a single feature threshold. Real classifiers like
-          neural networks learn complex, high-dimensional boundaries from thousands
-          of features simultaneously.
+          This is a simplified example with just two features and a straight
+          boundary. Real AI classifiers handle thousands of features at once and
+          can learn curved, complex boundaries — but the core idea is the same.
         </p>
       </Section>
 
       <Section number={3} title="When to Use Which">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          Choosing the wrong paradigm wastes data, compute, and time. The key
-          question is: <span className="text-white">what signals do you have available during training?</span>
+          Choosing the right approach from the start saves enormous amounts of time and
+          effort. The key question to ask is: <span className="text-white">what information do I already have, and what do I want the AI to produce?</span>
         </p>
         <ComparisonTable />
       </Section>

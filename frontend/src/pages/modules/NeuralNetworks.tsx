@@ -445,8 +445,9 @@ function XORDemo() {
   return (
     <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-6">
       <p className="text-sm text-gray-400 mb-4">
-        XOR is not linearly separable — a single neuron can never solve it. A 2-layer
-        network with 2 hidden units learns it by dividing the space non-linearly.
+        The table below shows all four possible XOR inputs and the correct outputs. After
+        training, the "pred" column shows what the network predicts — the closer to the
+        right answer, the better. The loss chart shows mistakes shrinking over training.
       </p>
 
       <div className="mb-5">
@@ -515,16 +516,18 @@ export function NeuralNetworks({ onComplete, completed }: ModuleProps) {
         </div>
         <h2 className="mb-4 text-4xl font-bold tracking-tight">Neural Networks</h2>
         <p className="text-lg text-gray-400 leading-relaxed">
-          How stacking simple math operations — learned from data — gives machines the ability to
-          see, read, and reason.
+          The brain has 86 billion neurons. AI researchers borrowed the idea and built
+          something simpler — but surprisingly powerful. Here's how it works.
         </p>
       </section>
 
       <Section number={1} title="The Artificial Neuron">
         <p className="mb-6 text-gray-300 leading-relaxed">
-          A neuron is disarmingly simple: multiply each input by a learned weight, sum them up,
-          add a bias, then squash the result through an activation function. That's it.
-          Stacked in layers, millions of these tiny computations produce intelligence.
+          A real brain neuron fires when it gets enough signal from its neighbours. An artificial
+          neuron works similarly: it receives several numbers as input, combines them according to
+          its own learned settings, and produces one number as output. That output then flows into
+          more neurons in the next layer. Stack enough of these together and the network can learn
+          to recognise faces, understand sentences, and beat world champions at games.
         </p>
         <NeuronDiagram />
         <p className="mt-3 text-center text-xs text-gray-500 font-mono">
@@ -532,9 +535,9 @@ export function NeuralNetworks({ onComplete, completed }: ModuleProps) {
         </p>
         <div className="mt-6 grid grid-cols-3 gap-4 text-sm">
           {[
-            { term: 'Weights (w)', def: 'How much each input matters. Learned during training.' },
-            { term: 'Bias (b)', def: 'Shifts the threshold. Lets the neuron fire even when all inputs are zero.' },
-            { term: 'Activation', def: 'Adds non-linearity. Without it, any depth collapses to one layer.' },
+            { term: 'Weights (w)', def: 'How much attention the neuron pays to each input. These are the dials the AI learns to set during training.' },
+            { term: 'Bias (b)', def: 'A built-in nudge that shifts how easily the neuron activates — like adjusting the sensitivity of a switch.' },
+            { term: 'Activation', def: 'A curve applied to the output that lets the network learn complex, non-straight-line patterns. Without it, adding more layers does nothing.' },
           ].map(({ term, def }) => (
             <div key={term} className="rounded-lg border border-gray-800 bg-gray-900/30 p-3">
               <p className="font-semibold text-indigo-300 mb-1">{term}</p>
@@ -546,45 +549,52 @@ export function NeuralNetworks({ onComplete, completed }: ModuleProps) {
 
       <Section number={2} title="Interactive Perceptron">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          Drag the sliders to adjust inputs, weights, and bias. Watch how the weighted sum
-          and sigmoid output change instantly. The neuron fires (outputs 1) when{' '}
-          <span className="font-mono text-indigo-300">σ(z) ≥ 0.5</span>.
+          Try adjusting the sliders below to change the inputs and the neuron's settings.
+          Watch the numbers update in real time. The neuron "fires" — outputs a 1 —
+          when its combined signal crosses the threshold.
         </p>
         <Perceptron />
       </Section>
 
       <Section number={3} title="The Forward Pass">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          When a network makes a prediction, data flows left to right — input layer to hidden
-          layer to output. Each layer transforms the signal. Click below to step through it.
+          When you ask a neural network a question, your input travels through layers
+          from left to right. Each layer refines what it knows a bit more, until the
+          final layer produces the answer. Click the button below to watch the signal
+          move through a small three-layer network, step by step.
         </p>
         <ForwardPass />
         <p className="mt-3 text-xs text-gray-500">
-          Values here are fixed for illustration. Each neuron in the hidden layer sees all
-          inputs; each applies a sigmoid and passes its result forward.
+          The numbers here are fixed just for illustration. In practice, every neuron in
+          each layer sees all the outputs from the previous layer and produces one number
+          to pass forward.
         </p>
       </Section>
 
       <Section number={4} title="Activation Functions">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          The activation function is what gives networks their power. Without it, chaining
-          layers together is mathematically equivalent to a single layer — no matter how deep.
+          After each layer, every neuron's output gets bent through a small curve called an
+          activation function. This sounds like a tiny detail, but it's everything. Without
+          it, you could stack a thousand layers and the whole network would still behave like
+          a single flat step — unable to learn complex patterns. The curve is what lets deep
+          networks recognise irregular shapes, subtle differences, and non-obvious patterns.
           Move the slider to explore each function's shape.
         </p>
         <ActivationChart />
         <div className="mt-4 grid grid-cols-3 gap-3 text-xs text-gray-500">
-          <p><span className="text-indigo-300 font-semibold">Sigmoid</span> — smooth, bounded 0→1. Classic but can cause vanishing gradients in deep nets.</p>
-          <p><span className="text-emerald-400 font-semibold">ReLU</span> — dead simple: if negative, zero it. Dominates modern networks because gradients don't vanish.</p>
-          <p><span className="text-pink-400 font-semibold">Tanh</span> — like sigmoid but centred at zero. Preferred in recurrent layers.</p>
+          <p><span className="text-indigo-300 font-semibold">Sigmoid</span> — squashes any number to between 0 and 1. Easy to interpret but struggles in very deep networks.</p>
+          <p><span className="text-emerald-400 font-semibold">ReLU</span> — brutally simple: if the number is negative, output zero; otherwise, pass it through unchanged. This straightforwardness made it the most popular choice for years.</p>
+          <p><span className="text-pink-400 font-semibold">Tanh</span> — similar to Sigmoid but centres around zero, which trains better in some situations.</p>
         </div>
       </Section>
 
       <Section number={5} title="Teaching XOR">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          In 1969, Minsky and Papert proved a single neuron can't learn XOR — it requires a
-          curved decision boundary. A two-layer network learns it in seconds using
-          backpropagation: compute the error, then nudge every weight in the direction that
-          reduces it.
+          XOR is a simple rule: "one or the other, but not both." So 0 XOR 1 = 1 (one of
+          them is true), but 1 XOR 1 = 0 (both are true). A single neuron cannot learn this
+          because it can only draw a straight line — and no straight line can separate XOR's
+          four outcomes correctly. A two-layer network can, by drawing two lines and combining
+          them. Click "Train" below to watch it figure this out on its own in seconds.
         </p>
         <XORDemo />
       </Section>

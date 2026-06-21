@@ -295,17 +295,21 @@ export function RAG({ onComplete, completed }: ModuleProps) {
         </div>
         <h2 className="mb-4 text-4xl font-bold tracking-tight">RAG</h2>
         <p className="text-lg text-gray-400 leading-relaxed">
-          Retrieval-Augmented Generation gives language models access to a knowledge base
-          at inference time — reducing hallucinations and keeping answers grounded in facts.
+          AI chatbots don't have the internet open while they're talking to you — all their
+          knowledge was locked in during training. RAG is a way to give them fresh,
+          up-to-date information by searching a document library before they answer.
         </p>
       </section>
 
       <Section number={1} title="The Problem RAG Solves">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          Language models memorise knowledge in their weights during training. This creates
-          two problems: the knowledge has a cutoff date, and the model may hallucinate
-          confident-sounding facts that were never in the training data. Retraining on
-          new data is prohibitively expensive.
+          Imagine someone who read every book and article ever published, then walked into
+          a room with no internet and started answering questions. They'd know an enormous
+          amount — but their knowledge would be frozen at the moment they walked in. Ask
+          about last week's news and they'd either say "I don't know" or make something up.
+          Retraining an AI on new information would cost millions of dollars and take months.
+          RAG solves this differently: let the AI quickly search a document library and read
+          the relevant results before it answers.
         </p>
         <div className="grid grid-cols-2 gap-4">
           {[
@@ -325,9 +329,11 @@ export function RAG({ onComplete, completed }: ModuleProps) {
 
       <Section number={2} title="The RAG Pipeline">
         <p className="mb-5 text-gray-300 leading-relaxed">
-          RAG inserts a retrieval step between the user's question and the model's answer.
-          The query is embedded, similar document chunks are fetched from a vector store,
-          and the chunks are prepended to the prompt as context before generation.
+          Here's how RAG works: your question gets converted into a mathematical fingerprint,
+          then compared to every document in the library. The most relevant documents get
+          pulled out and placed right before your question so the AI can read them. The AI
+          then uses those documents to give you a grounded, accurate answer instead of
+          relying on potentially outdated memory.
         </p>
         <div className="flex items-start gap-2 overflow-x-auto pb-2">
           {[
@@ -351,27 +357,28 @@ export function RAG({ onComplete, completed }: ModuleProps) {
 
       <Section number={3} title="Live Demo">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          The knowledge base below contains 20 chunks about AI concepts. Type a question
-          and watch the pipeline execute: your query gets embedded, the nearest chunks are
-          retrieved, an augmented prompt is assembled, and a grounded answer is generated.
+          The knowledge base below has 20 short articles about AI concepts. Type a question
+          and watch the whole pipeline run live: your question gets converted to a
+          fingerprint, the most relevant articles are retrieved, and a grounded answer is
+          assembled from them.
         </p>
         <RAGDemo />
       </Section>
 
       <Section number={4} title="Why It Works">
         <p className="mb-4 text-gray-300 leading-relaxed">
-          RAG combines two complementary memory types. The model's weights contain{' '}
-          <span className="text-white">parametric knowledge</span> — world knowledge
-          compressed into billions of parameters during training. Retrieved documents
-          provide <span className="text-white">non-parametric knowledge</span> — exact
-          text that the model can quote directly. Neither alone is sufficient; together
-          they produce accurate, citable answers.
+          RAG works because it combines two types of knowledge. The AI's training gave it a
+          deep understanding of language, reasoning, and the world in general. The retrieved
+          documents give it specific, current, verifiable facts to work from right now.
+          Neither alone is enough — an AI with only training memory guesses; a search engine
+          with only documents can't reason. Together they produce answers that are both
+          thoughtful and accurate.
         </p>
         <div className="grid grid-cols-3 gap-3 text-xs">
           {[
-            { term: 'Chunking', def: 'Documents are split into ~500-token chunks before embedding, so each chunk covers one focused idea.' },
-            { term: 'Vector store', def: 'Embeddings are stored in a specialised index (Pinecone, Weaviate, Turso sqlite-vec) optimised for fast similarity search.' },
-            { term: 'Re-ranking', def: 'A second model re-scores retrieved chunks for relevance before including them in the prompt.' },
+            { term: 'Chunking', def: 'Long documents are split into smaller pieces (around 500 words each) before being stored, so each piece covers one focused idea and is easier to match to a question.' },
+            { term: 'Vector store', def: 'The document fingerprints are stored in a special database built for comparing similarity quickly — searching millions of documents in milliseconds.' },
+            { term: 'Re-ranking', def: 'After retrieval, a second AI pass re-scores the retrieved documents for actual relevance to the question, making sure only the most useful ones get included.' },
           ].map(({ term, def }) => (
             <div key={term} className="rounded-xl border border-gray-800 bg-gray-900/40 p-3">
               <p className="font-semibold text-indigo-300 mb-1">{term}</p>
