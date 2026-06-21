@@ -100,12 +100,35 @@ function MapNode({
         opacity={circleOpacity}
         style={{ transition }}
       />
+      {state === 'available' && (
+        <text
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize={17}
+          opacity={textOpacity}
+          style={{ userSelect: 'none', transition: 'opacity 0.2s ease' }}
+        >
+          {node.icon}
+        </text>
+      )}
       {state === 'completed' && (
         <text
           textAnchor="middle"
           dominantBaseline="central"
+          fontSize={17}
+          opacity={textOpacity}
+          style={{ userSelect: 'none', transition: 'opacity 0.2s ease' }}
+        >
+          {node.icon}
+        </text>
+      )}
+      {state === 'completed' && (
+        <text
+          textAnchor="middle"
+          y={-18}
+          dominantBaseline="central"
           fill="#a5b4fc"
-          fontSize={18}
+          fontSize={11}
           opacity={textOpacity}
           style={{ userSelect: 'none', transition: 'opacity 0.2s ease' }}
         >
@@ -116,12 +139,11 @@ function MapNode({
         <text
           textAnchor="middle"
           dominantBaseline="central"
-          fill="#374151"
-          fontSize={14}
+          fontSize={16}
           opacity={textOpacity}
           style={{ userSelect: 'none', transition: 'opacity 0.2s ease' }}
         >
-          ⬡
+          🔒
         </text>
       )}
       <text
@@ -162,17 +184,23 @@ function NodeTooltip({
 
   return (
     <div
-      className="pointer-events-none absolute z-20 w-52 rounded-xl border border-gray-800 bg-gray-950/95 px-3 py-2.5 shadow-2xl"
+      className="pointer-events-none absolute z-20 w-56 rounded-xl bg-gray-800 px-3 py-3 shadow-xl shadow-black/60 ring-1 ring-indigo-700/50"
       style={{
         left: sx,
-        top: above ? sy - nodeEdgePx - 12 - 80 : sy + nodeEdgePx + 12,
+        top: above ? sy - nodeEdgePx - 16 - 90 : sy + nodeEdgePx + 16,
         transform: 'translateX(-50%)',
       }}
     >
-      <p className="mb-0.5 text-sm font-semibold text-white">{node.label}</p>
-      <p className="text-xs leading-snug text-gray-400">{node.description}</p>
+      <div className="mb-1.5 flex items-center gap-2">
+        <span className="text-base leading-none">{node.icon}</span>
+        <p className="text-sm font-semibold text-white">{node.label}</p>
+      </div>
+      <p className="text-xs leading-relaxed text-gray-300">{node.description}</p>
       {state === 'locked' && (
-        <p className="mt-1.5 text-xs text-gray-600">🔒 Complete prerequisites first</p>
+        <p className="mt-2 text-xs text-gray-500">🔒 Complete prerequisites first</p>
+      )}
+      {state === 'completed' && (
+        <p className="mt-2 text-xs text-indigo-400">✓ Completed</p>
       )}
     </div>
   )
