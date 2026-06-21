@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 
 from app.api.deps import get_current_user
-from app.db.client import get_client
+from app.db.client import db_execute
 
 router = APIRouter()
 
@@ -17,8 +17,7 @@ _VALID_NODES = {
 
 @router.get("")
 async def get_progress(user_id: str = Depends(get_current_user)) -> JSONResponse:
-    client = await get_client()
-    result = await client.execute(
+    result = await db_execute(
         "SELECT node_id FROM progress WHERE user_id = ?", [user_id]
     )
     return JSONResponse({"completed": [row["node_id"] for row in result.rows]})
@@ -32,9 +31,8 @@ async def mark_complete(
     if node_id not in _VALID_NODES:
         raise HTTPException(status_code=404, detail="Unknown node")
 
-    client = await get_client()
     now = datetime.now(timezone.utc).isoformat()
-    await client.execute(
+    await db_execute(
         "INSERT OR IGNORE INTO progress (user_id, node_id, completed_at) VALUES (?, ?, ?)",
         [user_id, node_id, now],
     )
@@ -49,8 +47,7 @@ async def mark_incomplete(
     if node_id not in _VALID_NODES:
         raise HTTPException(status_code=404, detail="Unknown node")
 
-    client = await get_client()
-    await client.execute(
+    await db_execute(
         "DELETE FROM progress WHERE user_id = ? AND node_id = ?",
         [user_id, node_id],
     )

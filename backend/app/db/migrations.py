@@ -1,4 +1,4 @@
-from app.db.client import get_client
+from app.db.client import db_execute
 
 _SCHEMA = [
     """
@@ -31,6 +31,5 @@ _SCHEMA = [
 
 
 async def run_migrations() -> None:
-    client = await get_client()
     for statement in _SCHEMA:
-        await client.execute(statement.strip())
+        await db_execute(statement.strip())

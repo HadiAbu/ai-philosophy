@@ -100,18 +100,7 @@ function MapNode({
         opacity={circleOpacity}
         style={{ transition }}
       />
-      {state === 'available' && (
-        <text
-          textAnchor="middle"
-          dominantBaseline="central"
-          fontSize={17}
-          opacity={textOpacity}
-          style={{ userSelect: 'none', transition: 'opacity 0.2s ease' }}
-        >
-          {node.icon}
-        </text>
-      )}
-      {state === 'completed' && (
+      {state !== 'locked' && (
         <text
           textAnchor="middle"
           dominantBaseline="central"
