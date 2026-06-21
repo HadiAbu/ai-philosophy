@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 
 import { NODES_BY_ID } from '../data/nodes'
 import { useProgress } from '../hooks/useProgress'
+import { Activations } from './modules/Activations'
 import { Attention } from './modules/Attention'
 import { Embeddings } from './modules/Embeddings'
 import { Hallucinations } from './modules/Hallucinations'
@@ -12,6 +13,7 @@ import { RAG } from './modules/RAG'
 import { Retrieval } from './modules/Retrieval'
 import { Tokenization } from './modules/Tokenization'
 import { Transformers } from './modules/Transformers'
+import { TypesOfML } from './modules/TypesOfML'
 import { UseCases } from './modules/UseCases'
 import { WhatIsAI } from './modules/WhatIsAI'
 
@@ -22,7 +24,9 @@ type ModuleProps = {
 
 const MODULES: Record<string, ComponentType<ModuleProps>> = {
   'what-is-ai': WhatIsAI,
+  'types-of-ml': TypesOfML,
   'neural-networks': NeuralNetworks,
+  'activations': Activations,
   'transformers': Transformers,
   'tokenization': Tokenization,
   'attention': Attention,

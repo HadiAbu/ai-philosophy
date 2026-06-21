@@ -30,6 +30,7 @@ export const NODES: ConceptNode[] = [
     description: 'Supervised, unsupervised & reinforcement learning',
     x: 200, y: 260,
     available: false,
+    unlockedBy: ['what-is-ai'],
     connections: [],
   },
   {
@@ -39,15 +40,16 @@ export const NODES: ConceptNode[] = [
     x: 850, y: 260,
     available: false,
     unlockedBy: ['what-is-ai'],
-    connections: ['activations'],
+    connections: ['activations', 'transformers'],
   },
   {
     id: 'activations',
     label: 'Activations',
     description: 'Functions that give neural networks non-linearity',
-    x: 850, y: 430,
+    x: 1080, y: 430,
     available: false,
-    connections: ['transformers'],
+    unlockedBy: ['neural-networks'],
+    connections: [],
   },
   {
     id: 'transformers',
