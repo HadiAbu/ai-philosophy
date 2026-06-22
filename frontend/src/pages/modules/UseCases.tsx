@@ -202,7 +202,7 @@ function ClassifyDemo() {
   return (
     <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-5 space-y-4">
       <div className="flex flex-wrap gap-1.5">
-        {CLASSIFY_EXAMPLES.map((e, i) => (
+        {CLASSIFY_EXAMPLES.map((_e, i) => (
           <button key={i} onClick={() => setIdx(i)}
             className={`px-2.5 py-1 rounded-lg text-xs transition-colors ${
               idx === i ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'
