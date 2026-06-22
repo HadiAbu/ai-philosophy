@@ -95,7 +95,7 @@ jobs:
             cd ~/projects/ai-philosophy
             git pull
             docker compose -f docker-compose.prod.yml pull backend
-            docker compose -f docker-compose.prod.yml up -d backend
+            docker compose -f docker-compose.prod.yml up -d backend nginx
 
       # 7. Cleanup: Revoke IP access (runs even if deployment steps fail)
       - name: Revoke Runner IP
