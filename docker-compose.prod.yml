@@ -1,11 +1,24 @@
 name: aiphilosophy
 
 services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    restart: unless-stopped
+
   backend:
     image: ghcr.io/hadiabu/ai-philosophy-backend:latest
     pull_policy: always
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     env_file:
       - ./backend/.env
     restart: unless-stopped
@@ -19,9 +32,6 @@ services:
   frontend:
     image: ghcr.io/hadiabu/ai-philosophy-frontend:latest
     pull_policy: always
-    ports:
-      - "80:80"
-    depends_on:
-      backend:
-        condition: service_healthy
+    expose:
+      - "80"
     restart: unless-stopped
