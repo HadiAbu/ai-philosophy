@@ -39,9 +39,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Lowercase owner
-        run: echo "OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
@@ -56,8 +53,8 @@ jobs:
           file: ./frontend/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ env.OWNER }}/ai-philosophy-frontend:${{ github.sha }}
-            ghcr.io/${{ env.OWNER }}/ai-philosophy-frontend:latest
+            ghcr.io/hadiabu/ai-philosophy-frontend:${{ github.sha }}
+            ghcr.io/hadiabu/ai-philosophy-frontend:latest
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1
