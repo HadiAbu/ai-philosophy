@@ -35,9 +35,33 @@ jobs:
     needs: typecheck
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    env:
+      AWS_REGION: 'eu-north-1'
+      AWS_SECURITY_GROUP_ID: 'sg-0ed203d9b6df0f8c3'
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get Runner IP
+        id: ip
+        run: |
+          RUNNER_IP=$(curl -s https://api.ipify.org)
+          echo "ip=$RUNNER_IP" >> $GITHUB_OUTPUT
+
+      - name: Whitelist Runner IP
+        run: |
+          aws ec2 authorize-security-group-ingress \
+            --group-id ${{ env.AWS_SECURITY_GROUP_ID }} \
+            --protocol tcp \
+            --port 22 \
+            --cidr ${{ steps.ip.outputs.ip }}/32
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -67,3 +91,12 @@ jobs:
             git pull
             docker compose -f docker-compose.prod.yml pull frontend
             docker compose -f docker-compose.prod.yml up -d frontend
+
+      - name: Revoke Runner IP
+        if: always()
+        run: |
+          aws ec2 revoke-security-group-ingress \
+            --group-id ${{ env.AWS_SECURITY_GROUP_ID }} \
+            --protocol tcp \
+            --port 22 \
+            --cidr ${{ steps.ip.outputs.ip }}/32
