@@ -10,7 +10,7 @@ export function Register() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  if (userId) return <Navigate to="/" replace />
+  if (userId) return <Navigate to="/home" replace />
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -18,7 +18,7 @@ export function Register() {
     setLoading(true)
     try {
       await register(email, password)
-      navigate('/')
+      navigate('/home')
     } catch (err: unknown) {
       const detail = (err as { response?: { data?: { detail?: unknown } } })
         ?.response?.data?.detail

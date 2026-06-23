@@ -10,7 +10,7 @@ export function Login() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  if (userId) return <Navigate to="/" replace />
+  if (userId) return <Navigate to="/home" replace />
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -18,7 +18,7 @@ export function Login() {
     setLoading(true)
     try {
       await login(email, password)
-      navigate('/')
+      navigate('/home')
     } catch {
       setError('Invalid email or password')
     } finally {

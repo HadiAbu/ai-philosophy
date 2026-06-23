@@ -6,6 +6,7 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import { AuthProvider } from './contexts/AuthProvider'
 import { posthog } from './lib/posthog'
 import { Home } from './pages/Home'
+import { Landing } from './pages/Landing'
 import { Learn } from './pages/Learn'
 import { Profile } from './pages/Profile'
 import { Login } from './pages/auth/Login'
@@ -28,8 +29,9 @@ export default function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/" element={<Landing />} />
             <Route
-              path="/"
+              path="/home"
               element={
                 <ProtectedRoute>
                   <Home />
