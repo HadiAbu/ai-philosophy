@@ -3,8 +3,11 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-# Baked at build time — nginx proxies /api to the backend container
+ARG VITE_POSTHOG_KEY
+ARG VITE_POSTHOG_HOST
 ENV VITE_API_URL=/api
+ENV VITE_POSTHOG_KEY=$VITE_POSTHOG_KEY
+ENV VITE_POSTHOG_HOST=$VITE_POSTHOG_HOST
 RUN npm run build
 
 FROM nginx:alpine

@@ -79,6 +79,9 @@ jobs:
           tags: |
             ghcr.io/hadiabu/ai-philosophy-frontend:${{ github.sha }}
             ghcr.io/hadiabu/ai-philosophy-frontend:latest
+          build-args: |
+            VITE_POSTHOG_KEY=${{ secrets.VITE_POSTHOG_KEY }}
+            VITE_POSTHOG_HOST=${{ secrets.VITE_POSTHOG_HOST }}
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1

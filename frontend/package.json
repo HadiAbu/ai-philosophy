@@ -14,6 +14,7 @@
     "axios": "^1.18.0",
     "d3": "^7.9.0",
     "framer-motion": "^12.40.0",
+    "posthog-js": "^1.392.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.18.0"

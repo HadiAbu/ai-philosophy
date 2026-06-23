@@ -1,9 +1,10 @@
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 
 import { ErrorBoundary } from '../components/ErrorBoundary'
 import { NODES_BY_ID } from '../data/nodes'
 import { useProgress } from '../hooks/useProgress'
+import { posthog } from '../lib/posthog'
 
 // Lazy-load each module so only the requested module's chunk is fetched.
 // Named exports need to be re-wrapped as default exports for React.lazy.
@@ -61,11 +62,22 @@ export function Learn() {
   const node = NODES_BY_ID[nodeId]
   const Module = MODULES[nodeId as ModuleId]
   const isCompleted = completed.has(nodeId)
+  const startTimeRef = useRef<number>(Date.now())
+
+  useEffect(() => {
+    startTimeRef.current = Date.now()
+    posthog.capture('module_opened', { module_id: nodeId, module_label: node.label })
+  }, [nodeId, node.label])
 
   async function handleComplete() {
     if (completing || isCompleted) return
     setCompleting(true)
     try {
+      posthog.capture('module_completed', {
+        module_id: nodeId,
+        module_label: node.label,
+        time_spent_seconds: Math.round((Date.now() - startTimeRef.current) / 1000),
+      })
       await markComplete(nodeId!)
       navigate('/')
     } finally {

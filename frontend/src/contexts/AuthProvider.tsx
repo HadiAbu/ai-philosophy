@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef, type ReactNode } from 'react'
 
 import { api, setAccessToken } from '../lib/api'
+import { posthog } from '../lib/posthog'
 import { AuthContext } from './AuthContext'
 
 interface AuthState {
@@ -50,7 +51,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then((res) => {
         const token = res.data.access_token
         setAccessToken(token)
-        dispatch({ type: 'SET_USER', userId: parseUserIdFromToken(token) })
+        const userId = parseUserIdFromToken(token)
+        dispatch({ type: 'SET_USER', userId })
+        posthog.identify(userId)
       })
       .catch(() => dispatch({ type: 'CLEAR_USER' }))
 
@@ -63,20 +66,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const res = await api.post('/auth/login', { email, password })
     const token = res.data.access_token
     setAccessToken(token)
-    dispatch({ type: 'SET_USER', userId: parseUserIdFromToken(token) })
+    const userId = parseUserIdFromToken(token)
+    dispatch({ type: 'SET_USER', userId })
+    posthog.identify(userId)
   }, [])
 
   const register = useCallback(async (email: string, password: string) => {
     const res = await api.post('/auth/register', { email, password })
     const token = res.data.access_token
     setAccessToken(token)
-    dispatch({ type: 'SET_USER', userId: parseUserIdFromToken(token) })
+    const userId = parseUserIdFromToken(token)
+    dispatch({ type: 'SET_USER', userId })
+    posthog.identify(userId)
   }, [])
 
   const logout = useCallback(async () => {
     await api.post('/auth/logout').catch(() => null)
     setAccessToken(null)
     dispatch({ type: 'CLEAR_USER' })
+    posthog.reset()
   }, [])
 
   return (
