@@ -248,7 +248,165 @@ function FunctionGallery() {
   )
 }
 
-// ─── 3. Modern activations ────────────────────────────────────────────────────
+// ─── 3. Single neuron playground ─────────────────────────────────────────────
+
+function SingleNeuronPlayground() {
+  const [x1, setX1] = useState(1.0)
+  const [x2, setX2] = useState(0.5)
+  const [w1, setW1] = useState(0.8)
+  const [w2, setW2] = useState(0.6)
+  const [bias, setBias] = useState(0.0)
+  const [activationKey, setActivationKey] = useState<FnKey>('relu')
+
+  const fn = FUNCTIONS[activationKey]
+  const z = w1 * x1 + w2 * x2 + bias
+  const output = fn.f(z)
+  const intensity = Math.min(1, Math.abs(output))
+  const isActive = output > 0.05
+
+  const neuronFillOpacity = Math.round(Math.min(40, intensity * 40))
+    .toString(16)
+    .padStart(2, '0')
+
+  const controls = [
+    { label: 'x₁', value: x1, set: setX1, note: 'input 1' },
+    { label: 'x₂', value: x2, set: setX2, note: 'input 2' },
+    { label: 'w₁', value: w1, set: setW1, note: 'weight for x₁' },
+    { label: 'w₂', value: w2, set: setW2, note: 'weight for x₂' },
+    { label: 'b',  value: bias, set: setBias, note: 'bias' },
+  ]
+
+  return (
+    <div className="rounded-xl border border-gray-800 bg-gray-900/40 overflow-hidden">
+      {/* Diagram */}
+      <div className="p-5 pb-0">
+        <svg viewBox="0 0 400 170" className="w-full">
+          {/* Input nodes */}
+          <circle cx={44} cy={62} r={22} fill="#1e1b4b" stroke="#4f46e5" strokeWidth={1.5} />
+          <text x={44} y={58} textAnchor="middle" fill="#a5b4fc" fontSize={12} fontFamily="monospace">x₁</text>
+          <text x={44} y={72} textAnchor="middle" fill="#a5b4fc" fontSize={9}>{x1.toFixed(1)}</text>
+
+          <circle cx={44} cy={122} r={22} fill="#1e1b4b" stroke="#4f46e5" strokeWidth={1.5} />
+          <text x={44} y={118} textAnchor="middle" fill="#a5b4fc" fontSize={12} fontFamily="monospace">x₂</text>
+          <text x={44} y={132} textAnchor="middle" fill="#a5b4fc" fontSize={9}>{x2.toFixed(1)}</text>
+
+          {/* Weight lines */}
+          <line x1={66} y1={68} x2={196} y2={84}
+            stroke={fn.color} strokeOpacity={0.4 + 0.4 * Math.min(1, Math.abs(w1))}
+            strokeWidth={Math.max(0.8, Math.abs(w1) * 2.5)} />
+          <line x1={66} y1={116} x2={196} y2={100}
+            stroke={fn.color} strokeOpacity={0.4 + 0.4 * Math.min(1, Math.abs(w2))}
+            strokeWidth={Math.max(0.8, Math.abs(w2) * 2.5)} />
+
+          {/* Weight labels */}
+          <text x={126} y={68} textAnchor="middle" fill={fn.color} fontSize={10} fontFamily="monospace">
+            w₁={w1.toFixed(1)}
+          </text>
+          <text x={126} y={128} textAnchor="middle" fill={fn.color} fontSize={10} fontFamily="monospace">
+            w₂={w2.toFixed(1)}
+          </text>
+
+          {/* Neuron body */}
+          <circle cx={230} cy={92}r={36}
+            fill={`${fn.color}${neuronFillOpacity}`}
+            stroke={fn.color}
+            strokeWidth={2}
+            strokeOpacity={0.35 + 0.65 * intensity}
+          />
+          <text x={230} y={87} textAnchor="middle" fill={fn.color} fontSize={11} fontFamily="monospace">Σ</text>
+          <text x={230} y={103} textAnchor="middle" fill={fn.color} fontSize={10}>f(z)</text>
+
+          {/* Bias line (dashed, from below) */}
+          <line x1={230} y1={155} x2={230} y2={128}
+            stroke="#4b5563" strokeWidth={1} strokeDasharray="4,3" />
+          <text x={230} y={166} textAnchor="middle" fill="#6b7280" fontSize={10} fontFamily="monospace">
+            b={bias.toFixed(1)}
+          </text>
+
+          {/* Output line */}
+          <line x1={266} y1={92} x2={330} y2={92}
+            stroke={isActive ? fn.color : '#374151'} strokeWidth={2}
+            style={{ transition: 'stroke 0.2s' }} />
+          <polygon points="325,87 337,92 325,97"
+            fill={isActive ? fn.color : '#374151'}
+            style={{ transition: 'fill 0.2s' }} />
+
+          {/* Output node */}
+          <circle cx={358} cy={92} r={26}
+            fill={isActive ? `${fn.color}20` : '#111827'}
+            stroke={isActive ? fn.color : '#374151'}
+            strokeWidth={1.5}
+            style={{ transition: 'all 0.2s' }}
+          />
+          <text x={358} y={89} textAnchor="middle"
+            fill={isActive ? fn.color : '#6b7280'}
+            fontSize={9} fontFamily="monospace"
+            style={{ transition: 'fill 0.2s' }}>
+            out
+          </text>
+          <text x={358} y={101} textAnchor="middle"
+            fill={isActive ? fn.color : '#6b7280'}
+            fontSize={9} fontFamily="monospace"
+            style={{ transition: 'fill 0.2s' }}>
+            {output.toFixed(2)}
+          </text>
+        </svg>
+      </div>
+
+      {/* Computation */}
+      <div className="mx-5 mb-4 rounded-lg bg-gray-950/60 px-4 py-3 font-mono text-xs space-y-1">
+        <p className="text-gray-500">
+          z = ({w1.toFixed(1)}×{x1.toFixed(1)}) + ({w2.toFixed(1)}×{x2.toFixed(1)}) + {bias.toFixed(1)}
+          <span className="text-gray-300 ml-2">= {z.toFixed(3)}</span>
+        </p>
+        <p>
+          <span className="text-gray-500">output = {fn.label}({z.toFixed(3)}) = </span>
+          <span style={{ color: fn.color }} className="font-bold">{output.toFixed(4)}</span>
+          {!isActive && <span className="ml-2 text-gray-600">(neuron silent)</span>}
+          {isActive && <span className="ml-2 text-gray-600">(neuron firing)</span>}
+        </p>
+      </div>
+
+      <div className="px-5 pb-5 space-y-4">
+        {/* Activation picker */}
+        <div className="flex flex-wrap gap-1.5">
+          <span className="text-xs text-gray-600 self-center mr-1">Activation:</span>
+          {(Object.keys(FUNCTIONS) as FnKey[]).map((k) => (
+            <button key={k} onClick={() => setActivationKey(k)}
+              className={`rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors ${
+                activationKey === k ? '' : 'border-gray-800 text-gray-600 hover:text-gray-400'
+              }`}
+              style={activationKey === k
+                ? { borderColor: `${FUNCTIONS[k].color}50`, background: `${FUNCTIONS[k].color}15`, color: FUNCTIONS[k].color }
+                : {}}>
+              {FUNCTIONS[k].label}
+            </button>
+          ))}
+        </div>
+
+        {/* Sliders */}
+        <div className="space-y-2.5">
+          {controls.map(({ label, value, set, note }) => (
+            <div key={label} className="flex items-center gap-3">
+              <span className="w-6 flex-shrink-0 font-mono text-xs text-gray-400 text-right">{label}</span>
+              <input
+                type="range" min={-2} max={2} step={0.1} value={value}
+                onChange={(e) => set(+e.target.value)}
+                className="flex-1 accent-indigo-500"
+              />
+              <span className="w-10 flex-shrink-0 font-mono text-xs text-gray-500 text-right">
+                {value.toFixed(1)}
+              </span>
+              <span className="w-28 flex-shrink-0 text-xs text-gray-700">{note}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── 4. Modern activations ────────────────────────────────────────────────────
 
 const MODERN = [
   {
@@ -353,7 +511,23 @@ export function Activations({ onComplete, completed }: ModuleProps) {
         <FunctionGallery />
       </Section>
 
-      <Section number={3} title="Modern Activations">
+      <Section number={3} title="Build a Neuron">
+        <p className="mb-4 text-gray-300 leading-relaxed">
+          A single neuron takes two inputs, multiplies each by a weight, adds a
+          bias, then passes the total through an activation function. Adjust the
+          sliders to see how each variable affects the output — and watch the
+          neuron light up or go silent.
+        </p>
+        <SingleNeuronPlayground />
+        <p className="mt-4 text-sm text-gray-500 leading-relaxed">
+          Try setting both weights to zero — the neuron goes completely silent regardless of the inputs.
+          Then drag w₁ high and x₁ negative — with ReLU, the neuron stays silent because the sum is
+          negative. Switch to Sigmoid and it still produces a small output.
+          That difference in how functions handle negative values drives real training choices.
+        </p>
+      </Section>
+
+      <Section number={4} title="Modern Activations">
         <p className="mb-4 text-gray-300 leading-relaxed">
           The AI models powering today's chatbots — GPT-4, LLaMA, BERT — use
           newer activation functions that outperform ReLU. Both GeLU and SiLU
