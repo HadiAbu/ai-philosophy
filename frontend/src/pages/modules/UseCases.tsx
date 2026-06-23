@@ -1,4 +1,4 @@
-import { useState, useRef, type ReactNode } from 'react'
+import { useEffect, useState, useRef, type ReactNode } from 'react'
 
 type ModuleProps = { onComplete: () => Promise<void>; completed: boolean }
 
@@ -14,6 +14,101 @@ function Section({ number, title, children }: { number: number; title: string; c
       {children}
     </section>
   )
+}
+
+// ─── Thinking animation ───────────────────────────────────────────────────────
+
+function ThinkingDots() {
+  const [frame, setFrame] = useState(0)
+  useEffect(() => {
+    const t = setInterval(() => setFrame(f => (f + 1) % 4), 380)
+    return () => clearInterval(t)
+  }, [])
+  const dots = '.'.repeat(frame)
+  return (
+    <span className="font-mono text-xs text-gray-500">
+      Thinking{dots.padEnd(3, ' ')}
+    </span>
+  )
+}
+
+// ─── Keyword-routed code responses ───────────────────────────────────────────
+
+const CANNED: Record<string, string> = {
+  sort: `def sort_items(items: list) -> dict:
+    sorted_items = sorted(items)
+    return {
+        "sorted": sorted_items,
+        "min":    sorted_items[0],
+        "max":    sorted_items[-1],
+        "count":  len(sorted_items),
+    }`,
+  file: `def read_lines(path: str) -> list[str]:
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return [line.rstrip("\\n") for line in f]
+    except FileNotFoundError:
+        return []`,
+  api: `import requests
+
+def fetch_json(url: str, params: dict | None = None) -> dict:
+    response = requests.get(url, params=params, timeout=10)
+    response.raise_for_status()
+    return response.json()`,
+  database: `import sqlite3
+from contextlib import contextmanager
+
+@contextmanager
+def get_db(path: str):
+    conn = sqlite3.connect(path)
+    conn.row_factory = sqlite3.Row
+    try:
+        yield conn
+        conn.commit()
+    finally:
+        conn.close()`,
+  debug: `# Issue: unhandled empty / None input.
+# Fixed version adds an early-return guard:
+
+def process(data):
+    if not data:
+        return None          # handles None, [], ""
+    if not isinstance(data, (list, str)):
+        raise TypeError(
+            f"Expected list or str, got {type(data).__name__}"
+        )
+    return data`,
+  explain: `# A list comprehension builds a new list in one line.
+#
+# Pattern:  [transform(x) for x in source if condition(x)]
+#
+# It is equivalent to:
+#   result = []
+#   for x in source:
+#       if condition(x):
+#           result.append(transform(x))
+#
+# It's shorter and usually faster than the loop form.`,
+  default: `def process(data: str) -> dict:
+    """Process input and return a structured result."""
+    if not data:
+        raise ValueError("data cannot be empty")
+    return {
+        "input":  data,
+        "length": len(data),
+        "words":  len(data.split()),
+    }`,
+}
+
+function generateCodeResponse(prompt: string): string {
+  const p = prompt.toLowerCase()
+  if (/sort|order|rank|arrange/.test(p))          return CANNED.sort
+  if (/file|read|write|open|save|load/.test(p))   return CANNED.file
+  if (/api|http|fetch|request|url|endpoint/.test(p)) return CANNED.api
+  if (/database|sql|sqlite|query|table/.test(p))  return CANNED.database
+  if (/fix|bug|error|crash|debug|broken/.test(p)) return CANNED.debug
+  if (/explain|what|how does|describe/.test(p))   return CANNED.explain
+  return CANNED.default
 }
 
 // ─── 1. Code ──────────────────────────────────────────────────────────────────
@@ -60,15 +155,32 @@ response = requests.post(url, json=data)`,
 
 function CodeDemo() {
   const [sel, setSel] = useState(0)
+  const [userPrompt, setUserPrompt] = useState('')
+  const [thinking, setThinking] = useState(false)
+  const [aiResponse, setAiResponse] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
-  const ex = CODE_EXAMPLES[sel]
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  const isCustom = sel === CODE_EXAMPLES.length
+  const ex = isCustom ? null : CODE_EXAMPLES[sel]
+
   function copy() {
-    navigator.clipboard.writeText(ex.response)
+    const text = isCustom ? aiResponse! : ex!.response
+    navigator.clipboard.writeText(text)
     setCopied(true)
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => setCopied(false), 1500)
+  }
+
+  function handleAsk() {
+    if (!userPrompt.trim() || thinking) return
+    setThinking(true)
+    setAiResponse(null)
+    const delay = 900 + Math.random() * 700
+    setTimeout(() => {
+      setAiResponse(generateCodeResponse(userPrompt))
+      setThinking(false)
+    }, delay)
   }
 
   return (
@@ -82,23 +194,77 @@ function CodeDemo() {
             {e.label}
           </button>
         ))}
+        <button
+          onClick={() => { setSel(CODE_EXAMPLES.length); setAiResponse(null) }}
+          className={`ml-auto border-l border-gray-800 px-3 py-2.5 text-xs font-medium whitespace-nowrap transition-colors ${
+            isCustom ? 'bg-gray-800 text-indigo-300' : 'text-gray-600 hover:text-gray-400'
+          }`}
+        >
+          Ask your own ✦
+        </button>
       </div>
-      <div className="p-5 space-y-3">
-        <div>
-          <p className="text-[10px] font-mono font-bold tracking-widest text-gray-600 mb-1">PROMPT</p>
-          <pre className="text-xs text-gray-400 font-mono leading-relaxed bg-gray-900 rounded-lg p-3 whitespace-pre-wrap">{ex.prompt}</pre>
-        </div>
-        <div className="border-t border-white/5 pt-3">
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-[10px] font-mono font-bold tracking-widest text-gray-600">RESPONSE</p>
-            <button onClick={copy}
-              className="text-[10px] text-gray-600 hover:text-gray-400 transition-colors font-mono">
-              {copied ? 'copied ✓' : 'copy'}
+
+      {isCustom ? (
+        <div className="p-5 space-y-3">
+          <textarea
+            value={userPrompt}
+            onChange={(e) => { setUserPrompt(e.target.value); setAiResponse(null) }}
+            onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleAsk() }}
+            placeholder="Describe what you want the code to do…"
+            rows={3}
+            className="w-full resize-none rounded-lg border border-gray-800 bg-gray-900 p-3 font-mono text-sm text-gray-300 placeholder:text-gray-700 focus:border-indigo-700 focus:outline-none"
+          />
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-xs text-gray-700">⌘ Enter to submit</span>
+            <button
+              onClick={handleAsk}
+              disabled={!userPrompt.trim() || thinking}
+              className="rounded-lg bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {thinking ? 'Asking…' : 'Ask AI →'}
             </button>
           </div>
-          <pre className="text-xs text-emerald-300 font-mono leading-relaxed bg-gray-900 rounded-lg p-3 whitespace-pre-wrap">{ex.response}</pre>
+
+          {thinking && (
+            <div className="rounded-lg border border-gray-800 bg-gray-900 p-3">
+              <ThinkingDots />
+            </div>
+          )}
+
+          {aiResponse && !thinking && (
+            <div className="space-y-2 border-t border-white/5 pt-3">
+              <div className="flex items-center justify-between">
+                <p className="font-mono text-[10px] font-bold tracking-widest text-gray-600">RESPONSE</p>
+                <button onClick={copy} className="font-mono text-[10px] text-gray-600 transition-colors hover:text-gray-400">
+                  {copied ? 'copied ✓' : 'copy'}
+                </button>
+              </div>
+              <pre className="whitespace-pre-wrap rounded-lg bg-gray-900 p-3 font-mono text-xs leading-relaxed text-emerald-300">
+                {aiResponse}
+              </pre>
+              <p className="text-xs text-gray-700">
+                Simulated — routed by keyword. A real model generates code specific to your exact request.
+              </p>
+            </div>
+          )}
         </div>
-      </div>
+      ) : (
+        <div className="p-5 space-y-3">
+          <div>
+            <p className="text-[10px] font-mono font-bold tracking-widest text-gray-600 mb-1">PROMPT</p>
+            <pre className="whitespace-pre-wrap rounded-lg bg-gray-900 p-3 font-mono text-xs leading-relaxed text-gray-400">{ex!.prompt}</pre>
+          </div>
+          <div className="border-t border-white/5 pt-3">
+            <div className="flex items-center justify-between mb-1">
+              <p className="font-mono text-[10px] font-bold tracking-widest text-gray-600">RESPONSE</p>
+              <button onClick={copy} className="font-mono text-[10px] text-gray-600 transition-colors hover:text-gray-400">
+                {copied ? 'copied ✓' : 'copy'}
+              </button>
+            </div>
+            <pre className="whitespace-pre-wrap rounded-lg bg-gray-900 p-3 font-mono text-xs leading-relaxed text-emerald-300">{ex!.response}</pre>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -170,6 +336,50 @@ function SummaryDemo() {
   )
 }
 
+// ─── Live keyword classifier ─────────────────────────────────────────────────
+
+const POS_WORDS = new Set([
+  'good','great','excellent','love','perfect','amazing','fantastic',
+  'recommend','happy','best','wonderful','awesome','pleased','satisfied',
+  'fast','quality','helpful','friendly','smooth','easy','beautiful','brilliant',
+])
+const NEG_WORDS = new Set([
+  'bad','terrible','awful','broken','waste','disappointed','useless',
+  'never','late','wrong','worst','horrible','poor','annoying','frustrating',
+  'refund','damaged','slow','rude','expensive','faulty','missing','defective',
+])
+
+function classifyLive(text: string): { label: string; confidence: number; reasoning: string } | null {
+  if (!text.trim()) return null
+  const words = text.toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/)
+  const posHits = words.filter(w => POS_WORDS.has(w))
+  const negHits = words.filter(w => NEG_WORDS.has(w))
+  const total = posHits.length + negHits.length
+
+  if (total === 0) return {
+    label: 'Neutral',
+    confidence: 0.62,
+    reasoning: 'No strong positive or negative signals detected.',
+  }
+
+  const posRatio = posHits.length / total
+  if (posRatio >= 0.7) return {
+    label: 'Positive',
+    confidence: Math.min(0.97, 0.70 + posRatio * 0.22),
+    reasoning: `Positive signal${posHits.length > 1 ? 's' : ''}: ${posHits.join(', ')}.`,
+  }
+  if (posRatio <= 0.3) return {
+    label: 'Negative',
+    confidence: Math.min(0.97, 0.70 + (1 - posRatio) * 0.22),
+    reasoning: `Negative signal${negHits.length > 1 ? 's' : ''}: ${negHits.join(', ')}.`,
+  }
+  return {
+    label: 'Mixed',
+    confidence: 0.74,
+    reasoning: `Both positive (${posHits.join(', ')}) and negative (${negHits.join(', ')}) signals.`,
+  }
+}
+
 // ─── 3. Classification ────────────────────────────────────────────────────────
 
 const CLASSIFY_EXAMPLES = [
@@ -193,6 +403,8 @@ const CLASSIFY_EXAMPLES = [
 function ClassifyDemo() {
   const [idx, setIdx] = useState(0)
   const [mode, setMode] = useState<'zero' | 'few'>('zero')
+  const [customText, setCustomText] = useState('')
+  const liveResult = classifyLive(customText)
 
   const ex = CLASSIFY_EXAMPLES[idx]
   const result = mode === 'zero' ? ex.zeroShot : ex.fewShot
@@ -250,6 +462,46 @@ function ClassifyDemo() {
         {mode === 'zero'
           ? 'No examples given — the AI uses everything it learned during training to decide the category.'
           : '3 labelled examples were added to the prompt before your input — the AI learns your specific categories from those.'}
+      </div>
+
+      {/* Live keyword classifier */}
+      <div className="border-t border-white/5 pt-4 space-y-3">
+        <p className="text-xs font-semibold text-gray-400">Try your own text</p>
+        <textarea
+          value={customText}
+          onChange={(e) => setCustomText(e.target.value)}
+          placeholder="Type any review or message to classify…"
+          rows={2}
+          className="w-full resize-none rounded-lg border border-gray-800 bg-gray-900 p-3 text-sm text-gray-300 placeholder:text-gray-700 focus:border-indigo-700 focus:outline-none"
+        />
+
+        {liveResult && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-bold text-white">{liveResult.label}</span>
+              <span className="font-mono text-xs text-gray-500">
+                {Math.round(liveResult.confidence * 100)}% confidence
+              </span>
+            </div>
+            <div className="h-1.5 overflow-hidden rounded-full bg-gray-800">
+              <div
+                className={`h-full rounded-full transition-all duration-300 ${
+                  liveResult.label === 'Positive' ? 'bg-emerald-500' :
+                  liveResult.label === 'Negative' ? 'bg-red-500' : 'bg-yellow-500'
+                }`}
+                style={{ width: `${Math.round(liveResult.confidence * 100)}%` }}
+              />
+            </div>
+            <p className="text-xs text-gray-500">{liveResult.reasoning}</p>
+          </div>
+        )}
+
+        <p className="text-xs text-gray-700 leading-relaxed">
+          This uses keyword counting — the same way early spam filters worked.
+          Try <span className="text-gray-500 italic">"not bad at all"</span> or{' '}
+          <span className="text-gray-500 italic">"I love how broken this is"</span> to see
+          where it falls apart. A real language model reads the whole sentence in context.
+        </p>
       </div>
     </div>
   )

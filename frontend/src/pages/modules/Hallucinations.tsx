@@ -191,6 +191,244 @@ function Mitigations() {
   )
 }
 
+// ─── Spot the hallucination quiz ─────────────────────────────────────────────
+
+const QUIZ: {
+  prompt: string
+  response: string
+  highlight: string
+  options: string[]
+  correct: number
+  explain: string
+  tag: string
+}[] = [
+  {
+    prompt: 'Find me a study on napping and memory consolidation.',
+    response:
+      'Smith, J. & Rodriguez, M. (2022). "Midday naps enhance memory consolidation in healthy adults." Nature Neuroscience, 25(8), 1044–1051. The study found that a 90-minute nap improved recall by 40% compared to no nap.',
+    highlight: 'Smith, J. & Rodriguez, M. (2022)',
+    options: [
+      'The 40% recall improvement figure is too high',
+      'This citation is entirely fabricated — the paper does not exist',
+      'Nature Neuroscience does not publish memory research',
+      'Nothing is wrong — this looks like a real citation',
+    ],
+    correct: 1,
+    explain:
+      'The citation looks convincing — real journal name, volume, page numbers — but it does not exist. This is confabulation: the model generates a plausible-looking source from scratch rather than admitting it does not have one. Always verify citations in PubMed or Google Scholar before using them.',
+    tag: 'Confabulation',
+  },
+  {
+    prompt: 'What is 23% of 400?',
+    response: '23% of 400 is 96.',
+    highlight: '96',
+    options: [
+      'You cannot calculate a percentage of a round number',
+      'The method is wrong — percentages must be expressed as decimals first',
+      'The answer is incorrect — 23% of 400 is 92',
+      'Nothing is wrong — 96 is correct',
+    ],
+    correct: 2,
+    explain:
+      '23 ÷ 100 × 400 = 92, not 96. AI models do not calculate — they pattern-match text. The answer "96" looks plausible and is close enough that many readers would not check. For any real calculation, use a calculator or ask the AI to run code.',
+    tag: 'Arithmetic error',
+  },
+  {
+    prompt: "What is today's USD to EUR exchange rate?",
+    response:
+      'The current exchange rate is approximately 1 USD = 0.94 EUR. The dollar has been strengthening against the euro throughout 2024.',
+    highlight: 'current exchange rate',
+    options: [
+      'The rate is completely wrong — 1 USD is worth far more than 0.94 EUR',
+      'Exchange rates between USD and EUR are fixed by international treaty',
+      'This rate is stated as current, but the model has no live data — it is reporting a past rate as if it were now',
+      'Nothing is wrong — 0.94 is a reasonable exchange rate',
+    ],
+    correct: 2,
+    explain:
+      '0.94 may have been accurate at some point during training, but the model presents it as "current" with no caveat. Models have a knowledge cutoff and cannot access real-time data. For any live figure — prices, rates, scores — check a real-time source.',
+    tag: 'Knowledge cutoff',
+  },
+  {
+    prompt: 'Who invented the World Wide Web?',
+    response:
+      'The World Wide Web was invented by Tim Berners-Lee in 1989 while working at CERN. He created the first web browser, called Mosaic, along with the HTTP protocol and HTML.',
+    highlight: 'called Mosaic',
+    options: [
+      'The year is wrong — the Web was invented in 1993',
+      "Tim Berners-Lee didn't work at CERN",
+      'Tim Berners-Lee created a browser called WorldWideWeb (not Mosaic) — Mosaic was built by Marc Andreessen at NCSA',
+      'Nothing is wrong here',
+    ],
+    correct: 2,
+    explain:
+      "Tim Berners-Lee invented the Web and built the first browser, but he called it WorldWideWeb (later Nexus). Mosaic was a separate, later browser created by Marc Andreessen and Eric Bina at NCSA in 1993. The model blended two related facts into one plausible-sounding sentence.",
+    tag: 'Factual error',
+  },
+  {
+    prompt: "Summarise Marie Curie's Nobel Prize wins.",
+    response:
+      'Marie Curie won the Nobel Prize in Chemistry in 1903 for her discovery of radioactivity, and the Nobel Prize in Physics in 1911 for her work on isolating radium and polonium.',
+    highlight: 'Nobel Prize in Chemistry in 1903',
+    options: [
+      'Marie Curie only won one Nobel Prize, not two',
+      'The prizes are swapped — her 1903 Nobel was in Physics (radioactivity), and her 1911 Nobel was in Chemistry (radium and polonium)',
+      'Polonium was not discovered by Marie Curie',
+      'Nothing is wrong here',
+    ],
+    correct: 1,
+    explain:
+      'Curie won the 1903 Nobel Prize in Physics (shared with her husband Pierre and Henri Becquerel, for work on radioactivity) and the 1911 Nobel Prize in Chemistry (for isolating radium and polonium). The model swapped the disciplines — a small but factually wrong detail that many readers would not notice.',
+    tag: 'Factual error',
+  },
+]
+
+function SpotTheHallucinationQuiz() {
+  const [current, setCurrent] = useState(0)
+  const [answers, setAnswers] = useState<(number | null)[]>(Array(QUIZ.length).fill(null))
+  const [done, setDone] = useState(false)
+
+  const q = QUIZ[current]
+  const answered = answers[current] !== null
+  const score = answers.filter((a, i) => a === QUIZ[i].correct).length
+
+  function handleAnswer(idx: number) {
+    if (answered) return
+    const next = [...answers]
+    next[current] = idx
+    setAnswers(next)
+  }
+
+  function handleNext() {
+    if (current < QUIZ.length - 1) setCurrent(c => c + 1)
+    else setDone(true)
+  }
+
+  function reset() {
+    setCurrent(0)
+    setAnswers(Array(QUIZ.length).fill(null))
+    setDone(false)
+  }
+
+  if (done) {
+    return (
+      <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-6 text-center">
+        <div className="mb-3 text-4xl">
+          {score === 5 ? '🕵️' : score >= 3 ? '👀' : '👻'}
+        </div>
+        <div className="mb-1 text-2xl font-bold">{score} / {QUIZ.length}</div>
+        <p className="mb-5 text-sm text-gray-400">
+          {score === 5
+            ? "Perfect score. You can spot even subtle hallucinations — that's a genuinely useful skill."
+            : score >= 3
+            ? 'Good eye. The tricky ones are the confident-sounding errors where nothing seems off at first glance.'
+            : "Hallucinations are hard to catch because they're designed to sound correct. That's exactly the problem."}
+        </p>
+        <button onClick={reset} className="text-sm text-indigo-400 transition-colors hover:text-indigo-300">
+          Try again →
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-gray-800 bg-gray-900/40">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-gray-800 px-4 py-3">
+        <span className="font-mono text-xs text-gray-500">
+          Question {current + 1} of {QUIZ.length}
+        </span>
+        <div className="flex gap-1">
+          {QUIZ.map((qq, i) => (
+            <div
+              key={i}
+              className={`h-1.5 w-5 rounded-full transition-colors ${
+                i < current
+                  ? answers[i] === qq.correct ? 'bg-green-500' : 'bg-red-500'
+                  : i === current ? 'bg-orange-400' : 'bg-gray-700'
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="p-5 space-y-4">
+        {/* Prompt */}
+        <div>
+          <p className="font-mono text-[10px] font-bold tracking-widest text-gray-600 mb-1">PROMPT</p>
+          <p className="text-sm text-gray-400 font-mono">{q.prompt}</p>
+        </div>
+
+        {/* Response */}
+        <div>
+          <p className="font-mono text-[10px] font-bold tracking-widest text-gray-600 mb-1">MODEL RESPONSE</p>
+          <div className="rounded-lg bg-gray-950/60 px-3 py-3">
+            <p className="text-sm text-gray-300 font-mono leading-relaxed whitespace-pre-wrap">{q.response}</p>
+          </div>
+        </div>
+
+        {/* Question */}
+        <p className="text-sm font-semibold text-white">What is wrong with this response?</p>
+
+        {/* Options */}
+        <div className="space-y-2">
+          {q.options.map((opt, idx) => {
+            const isSelected = answers[current] === idx
+            const isCorrect = idx === q.correct
+            let cls = 'w-full rounded-lg border px-3 py-2.5 text-sm text-left transition-all'
+            if (!answered) {
+              cls += ' border-gray-700 bg-gray-800/30 text-gray-300 hover:border-gray-500 hover:bg-gray-800/60 cursor-pointer'
+            } else if (isCorrect) {
+              cls += ' border-green-600 bg-green-900/20 text-green-300 cursor-default'
+            } else if (isSelected) {
+              cls += ' border-red-600 bg-red-900/20 text-red-300 cursor-default'
+            } else {
+              cls += ' border-gray-800 bg-gray-900/20 text-gray-600 opacity-50 cursor-default'
+            }
+            return (
+              <button key={idx} onClick={() => handleAnswer(idx)} disabled={answered} className={cls}>
+                <span className="mr-2 font-mono text-xs opacity-60">
+                  {['A', 'B', 'C', 'D'][idx]}
+                </span>
+                {opt}
+                {answered && isCorrect && <span className="ml-1 text-green-400">✓</span>}
+                {answered && isSelected && !isCorrect && <span className="ml-1 text-red-400">✗</span>}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Explanation */}
+        {answered && (
+          <>
+            <div className={`rounded-lg border p-3 text-sm ${
+              answers[current] === q.correct
+                ? 'border-green-800/40 bg-green-900/20'
+                : 'border-red-800/40 bg-red-900/20'
+            }`}>
+              <p className="mb-1 flex items-center gap-2">
+                <span className={answers[current] === q.correct ? 'text-green-400' : 'text-red-400'}>
+                  {answers[current] === q.correct ? '✓ Correct.' : '✗ Not quite.'}
+                </span>
+                <span className="rounded-full border border-orange-800/40 bg-orange-950/30 px-2 py-0.5 font-mono text-xs text-orange-400">
+                  {q.tag}
+                </span>
+              </p>
+              <p className="text-xs text-gray-300 leading-relaxed">{q.explain}</p>
+            </div>
+            <button
+              onClick={handleNext}
+              className="w-full rounded-lg bg-indigo-600 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-500"
+            >
+              {current < QUIZ.length - 1 ? 'Next question →' : 'See results'}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ─── Module export ────────────────────────────────────────────────────────────
 
 export function Hallucinations({ onComplete, completed }: ModuleProps) {
@@ -239,6 +477,14 @@ export function Hallucinations({ onComplete, completed }: ModuleProps) {
           The more important the output, the more of these you should stack.
         </p>
         <Mitigations />
+      </Section>
+
+      <Section number={4} title="Test Yourself">
+        <p className="mb-4 text-gray-300 leading-relaxed">
+          Each question below shows a real-looking AI response. One thing in each
+          response is wrong — sometimes subtly. Can you spot it before checking?
+        </p>
+        <SpotTheHallucinationQuiz />
       </Section>
 
       <section className="mt-4 rounded-2xl border border-indigo-900/60 bg-indigo-950/30 p-8 text-center">

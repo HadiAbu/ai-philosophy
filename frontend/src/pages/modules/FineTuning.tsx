@@ -16,6 +16,194 @@ function Section({ number, title, children }: { number: number; title: string; c
   )
 }
 
+// ─── Before / after demo ─────────────────────────────────────────────────────
+
+const DEMOS = [
+  {
+    scenario: 'Customer Support',
+    icon: '🛍️',
+    prompt: "My order hasn't arrived yet.",
+    models: [
+      {
+        label: 'Base Model',
+        tag: 'raw completion',
+        color: '#6b7280',
+        response:
+          "...and it was supposed to arrive by Tuesday. I checked the tracking and it says \"in transit\" but that's been the status for four days now. The package contains a birthday gift and the birthday is tomorrow so I'm getting pretty worried about—",
+        note: 'Continues the sentence as if writing a forum post. No awareness that a question was asked.',
+      },
+      {
+        label: 'Instruction-Tuned',
+        tag: 'chat assistant',
+        color: '#818cf8',
+        response:
+          "I'm sorry to hear your order hasn't arrived yet. Could you please share your order number so I can look into this? In the meantime, you can check your status under 'My Orders' on your account page.",
+        note: 'Reads as a helpful assistant — but generic. Has no access to real account data.',
+      },
+      {
+        label: 'Domain Fine-Tuned',
+        tag: 'support specialist',
+        color: '#34d399',
+        response:
+          "I'm sorry about the delay, Sarah. Order #4821-JK (shipped June 18, FedEx 7489234782) is held at the Chicago facility — revised delivery: June 25. I've escalated to fulfilment and applied a $10 credit to your account. Anything else I can help with?",
+        note: 'Trained on thousands of real support transcripts — references account data, takes action, matches brand tone.',
+      },
+    ],
+  },
+  {
+    scenario: 'Medical Q&A',
+    icon: '🏥',
+    prompt: 'What should I do about a headache?',
+    models: [
+      {
+        label: 'Base Model',
+        tag: 'raw completion',
+        color: '#6b7280',
+        response:
+          'A headache, also known as cephalalgia, is a condition of pain in the head. It is one of the most common forms of pain and a major reason for days off work. Headaches can occur as a result of many conditions whether serious or not. There are a number of different classification systems...',
+        note: 'Wikipedia-style completion — informative, but not answering the question.',
+      },
+      {
+        label: 'Instruction-Tuned',
+        tag: 'chat assistant',
+        color: '#818cf8',
+        response:
+          "For a mild headache: rest in a dark quiet room, drink water (dehydration is a common cause), and take ibuprofen or paracetamol if needed. If your headache is severe, sudden, or comes with a stiff neck, fever, or vision changes, seek medical attention promptly.",
+        note: 'Directly answers the question with actionable advice and appropriate safety caveats.',
+      },
+      {
+        label: 'Domain Fine-Tuned',
+        tag: 'clinical assistant',
+        color: '#34d399',
+        response:
+          "🟢 First steps: 16oz water now, rest in a dark room 20 min.\n🟡 No relief after 30 min: ibuprofen 400mg or paracetamol 500mg.\n\n⚠️ Seek immediate care if: sudden severe onset, stiff neck + fever, visual disturbances, or headache after head injury.\n\nShall I log this symptom or check for medication interactions?",
+        note: 'Trained on clinical decision-support data — structured format, severity flags, follow-up workflow.',
+      },
+    ],
+  },
+  {
+    scenario: 'Code Review',
+    icon: '💻',
+    prompt: 'def add(a, b):\n    return a + b',
+    models: [
+      {
+        label: 'Base Model',
+        tag: 'raw completion',
+        color: '#6b7280',
+        response:
+          'def subtract(a, b):\n    return a - b\n\ndef multiply(a, b):\n    return a * b\n\ndef divide(a, b):\n    if b == 0:\n        raise ValueError("Cannot divide by zero")\n    return a / b',
+        note: 'Autocomplete — adds more functions as if filling out a math utilities file.',
+      },
+      {
+        label: 'Instruction-Tuned',
+        tag: 'chat assistant',
+        color: '#818cf8',
+        response:
+          "This function correctly adds two numbers. Suggestions:\n\n1. Add type hints for clarity\n2. Add a docstring\n3. Consider input validation\n\ndef add(a: float, b: float) -> float:\n    \"\"\"Return the sum of a and b.\"\"\"\n    return a + b",
+        note: 'Follows instructions — gives a review, but the style and depth depend on the prompt.',
+      },
+      {
+        label: 'Domain Fine-Tuned',
+        tag: 'team code reviewer',
+        color: '#34d399',
+        response:
+          "📋 Review: add()\n\n✅ Logic correct\n⚠️  No type hints → add(a: int | float, b: int | float) -> int | float\n⚠️  No docstring (Google-style required)\n⚠️  No input validation — raises TypeError on strings\n❌  No unit tests in context\n\nSeverity: LOW  |  Score: 5/10\nRun: ruff check && add to test suite",
+        note: 'Trained on internal review history — enforces team standards, scores output, references tooling.',
+      },
+    ],
+  },
+]
+
+function BeforeAfterDemo() {
+  const [scenarioIdx, setScenarioIdx] = useState(0)
+  const [modelIdx, setModelIdx] = useState(0)
+
+  const demo = DEMOS[scenarioIdx]
+  const model = demo.models[modelIdx]
+
+  function selectScenario(i: number) {
+    setScenarioIdx(i)
+    setModelIdx(0)
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Scenario selector */}
+      <div className="flex flex-wrap gap-2">
+        {DEMOS.map((d, i) => (
+          <button
+            key={d.scenario}
+            onClick={() => selectScenario(i)}
+            className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
+              scenarioIdx === i
+                ? 'border-indigo-600 bg-indigo-950/40 text-indigo-300'
+                : 'border-gray-800 text-gray-500 hover:border-gray-700 hover:text-gray-300'
+            }`}
+          >
+            {d.icon} {d.scenario}
+          </button>
+        ))}
+      </div>
+
+      {/* Prompt */}
+      <div className="rounded-lg border border-gray-800 bg-gray-950/60 px-4 py-3">
+        <p className="mb-1 font-mono text-[10px] font-bold tracking-widest text-gray-600">PROMPT</p>
+        <pre className="font-mono text-sm text-gray-300 whitespace-pre-wrap">{demo.prompt}</pre>
+      </div>
+
+      {/* Model tabs — show progression */}
+      <div className="flex items-center gap-1">
+        {demo.models.map((m, i) => (
+          <div key={m.label} className="flex items-center gap-1">
+            <button
+              onClick={() => setModelIdx(i)}
+              className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-all ${
+                modelIdx === i
+                  ? 'text-white'
+                  : 'border-gray-800 text-gray-600 hover:border-gray-700 hover:text-gray-400'
+              }`}
+              style={
+                modelIdx === i
+                  ? { borderColor: `${m.color}60`, background: `${m.color}15`, color: m.color }
+                  : {}
+              }
+            >
+              {m.label}
+            </button>
+            {i < demo.models.length - 1 && (
+              <span className="text-gray-700 text-xs">→</span>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Response card */}
+      <div
+        className="rounded-xl border bg-gray-900/40 p-5 transition-all duration-200"
+        style={{ borderColor: `${model.color}30` }}
+      >
+        <div className="mb-3 flex items-center gap-2">
+          <span
+            className="rounded-full border px-2.5 py-0.5 font-mono text-xs font-semibold"
+            style={{ borderColor: `${model.color}50`, color: model.color, background: `${model.color}15` }}
+          >
+            {model.tag}
+          </span>
+        </div>
+        <pre className="mb-4 whitespace-pre-wrap font-mono text-sm leading-relaxed text-gray-300">
+          {model.response}
+        </pre>
+        <div className="border-t border-white/5 pt-3">
+          <p className="text-xs text-gray-500 leading-relaxed">
+            <span className="font-semibold text-gray-400">Why it looks like this: </span>
+            {model.note}
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Approach cards ───────────────────────────────────────────────────────────
 
 const APPROACHES = [
@@ -224,7 +412,17 @@ export function FineTuning({ onComplete, completed }: ModuleProps) {
         </p>
       </Section>
 
-      <Section number={2} title="Four Ways to Fine-Tune">
+      <Section number={2} title="See the Difference">
+        <p className="mb-4 text-gray-300 leading-relaxed">
+          The same prompt sent to a base model, an instruction-tuned model, and a
+          domain fine-tuned model produces three very different responses. Pick a
+          scenario and click through the progression to see exactly what each
+          stage of fine-tuning adds.
+        </p>
+        <BeforeAfterDemo />
+      </Section>
+
+      <Section number={3} title="Four Ways to Fine-Tune">
         <p className="mb-4 text-gray-300 leading-relaxed">
           "Fine-tuning" isn't one single thing — it's a family of techniques with
           very different costs, risks, and use cases. Click each one to understand
@@ -233,7 +431,7 @@ export function FineTuning({ onComplete, completed }: ModuleProps) {
         <ApproachCards />
       </Section>
 
-      <Section number={3} title="Fine-Tuning vs RAG — When to Use Which">
+      <Section number={4} title="Fine-Tuning vs RAG — When to Use Which">
         <p className="mb-4 text-gray-300 leading-relaxed">
           Fine-tuning and RAG both solve a version of the same problem: "how do I
           make this AI more useful for my specific situation?" But they solve it
@@ -249,7 +447,7 @@ export function FineTuning({ onComplete, completed }: ModuleProps) {
         </p>
       </Section>
 
-      <Section number={4} title="What You Actually Need to Fine-Tune">
+      <Section number={5} title="What You Actually Need to Fine-Tune">
         <p className="mb-4 text-gray-300 leading-relaxed">
           The most common misconception: fine-tuning requires massive compute.
           With modern techniques like LoRA, you can fine-tune a capable model on
