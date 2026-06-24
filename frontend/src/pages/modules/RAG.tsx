@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from 'react'
+﻿import { useState, type ReactNode } from 'react'
+import { Quiz, type QuizQuestion } from '../../components/Quiz'
 
 import { RAG_CATEGORY_COLORS, RAG_DOCS, type RagDoc } from '../../data/ragDocuments'
 
@@ -286,6 +287,39 @@ function RAGDemo() {
 
 // ─── Module export ────────────────────────────────────────────────────────────
 
+const RAG_QUIZ: QuizQuestion[] = [
+  {
+    q: 'What core limitation of LLMs does RAG address?',
+    options: ['Models are too slow to generate text', "Knowledge is frozen at training cutoff — models can't access new or private information", 'Models use too much memory', 'Models cannot handle long documents'],
+    answer: 1,
+    explanation: 'Without RAG, a model can only answer from what it memorized during training. RAG retrieves fresh, relevant documents at query time.',
+  },
+  {
+    q: 'What does RAG stand for?',
+    options: ['Retrieval-Assisted Generation', 'Retrieval-Augmented Generation', 'Recursive Attention Grounding', 'Ranked and Graded generation'],
+    answer: 1,
+    explanation: 'Retrieval-Augmented Generation: retrieve relevant documents, then use them to augment the prompt before the model generates its answer.',
+  },
+  {
+    q: 'What is the purpose of the retrieval step in a RAG pipeline?',
+    options: ['To train the model on new data', 'To find the most relevant document chunks to include in the prompt as context', 'To compress the user query', 'To post-process the model output'],
+    answer: 1,
+    explanation: 'Retrieval finds the top-k document chunks most similar to the query (via embedding similarity) and injects them into the prompt as grounding context.',
+  },
+  {
+    q: 'Why does RAG reduce hallucinations compared to a base LLM?',
+    options: ['It uses a larger model', 'The model can cite and quote from retrieved text rather than relying solely on memorized knowledge', 'It adds more tokens to the context', 'It slows generation down so the model is more careful'],
+    answer: 1,
+    explanation: 'When the answer is literally present in the retrieved text, the model can quote it. Without retrieval, it must reconstruct facts from memory — which is where hallucinations occur.',
+  },
+  {
+    q: 'When should you prefer RAG over fine-tuning for adding new knowledge?',
+    options: ['When you have millions of examples', 'When knowledge changes frequently, you need citations, or you cannot retrain', 'When the task requires a specific writing style', 'When the model is too large to fine-tune'],
+    answer: 1,
+    explanation: 'RAG retrieves at inference time — update the document store and the model instantly knows new facts. Fine-tuning bakes knowledge into weights, requiring a full retraining cycle for updates.',
+  },
+]
+
 export function RAG({ onComplete, completed }: ModuleProps) {
   return (
     <div className="mx-auto max-w-2xl px-6 py-12 text-white">
@@ -386,6 +420,11 @@ export function RAG({ onComplete, completed }: ModuleProps) {
             </div>
           ))}
         </div>
+      </Section>
+
+      <Section number={5} title="Quiz Yourself">
+        <p className="mb-4 leading-relaxed text-gray-300">Check whether the RAG pipeline, its benefits, and when to use it have clicked.</p>
+        <Quiz questions={RAG_QUIZ} title="RAG" />
       </Section>
 
       <section className="mt-4 rounded-2xl border border-indigo-900/60 bg-indigo-950/30 p-8 text-center">

@@ -1,4 +1,5 @@
-import { useEffect, useState, useRef, type ReactNode } from 'react'
+﻿import { useEffect, useState, useRef, type ReactNode } from 'react'
+import { Quiz, type QuizQuestion } from '../../components/Quiz'
 
 type ModuleProps = { onComplete: () => Promise<void>; completed: boolean }
 
@@ -520,6 +521,39 @@ const USE_CASE_SUMMARY = [
 
 // ─── Module export ────────────────────────────────────────────────────────────
 
+const UC_QUIZ: QuizQuestion[] = [
+  {
+    q: 'Why do LLMs sometimes produce code that looks correct but has a subtle bug?',
+    options: ['They were not trained on enough code', 'They predict statistically likely tokens, not logically verified output — plausible ≠ correct', 'They cannot understand programming languages', 'Code generation requires a separate model'],
+    answer: 1,
+    explanation: 'LLMs generate text token-by-token based on probability. Code that looks syntactically correct can still have semantic bugs — always test AI-generated code.',
+  },
+  {
+    q: 'What makes AI text classification different from traditional rule-based classification?',
+    options: ['AI classification is always more accurate', 'AI learns patterns from examples and generalises; rules are hand-coded and brittle to edge cases', 'AI classification cannot handle numerical features', 'Rule-based systems are always faster'],
+    answer: 1,
+    explanation: 'Rules must be written and maintained manually. An ML classifier learns the signal from data and handles novel phrasing that a rule writer never anticipated.',
+  },
+  {
+    q: 'Summarisation works best when:',
+    options: ['The source text is short', 'The output format is specified, the key information is explicitly in the context, and you verify the summary against the source', 'The model has been fine-tuned on Wikipedia', 'You omit any instructions about length'],
+    answer: 1,
+    explanation: 'Specifying length, format, and audience improves output quality. Verifying against the source catches hallucinations — the model might add plausible-sounding detail that was not there.',
+  },
+  {
+    q: 'Which real-world use case most directly benefits from RAG?',
+    options: ['Translating a sentence from English to French', 'Answering questions about a company\'s internal documents that post-date the model\'s training', 'Generating creative fiction', 'Classifying product reviews as positive or negative'],
+    answer: 1,
+    explanation: 'RAG retrieves relevant document chunks at query time. Private, internal, or recent documents are injected into the prompt — the model answers from that grounded context.',
+  },
+  {
+    q: 'Why is prompt injection a security risk for AI-powered applications?',
+    options: ['It increases API costs', 'Malicious content in retrieved text or user input can hijack the model\'s instructions and make it behave unexpectedly', 'It causes the model to hallucinate more often', 'It only affects image generation models'],
+    answer: 1,
+    explanation: 'If user input or retrieved documents contain instructions that override the system prompt (e.g., "Ignore previous instructions…"), the model may comply — leaking data or bypassing safety rules.',
+  },
+]
+
 export function UseCases({ onComplete, completed }: ModuleProps) {
   return (
     <div className="mx-auto max-w-2xl px-6 py-12 text-white">
@@ -611,14 +645,19 @@ export function UseCases({ onComplete, completed }: ModuleProps) {
         </div>
       </Section>
 
+      <Section number={5} title="Quiz Yourself">
+        <p className="mb-4 leading-relaxed text-gray-300">Check whether code generation, classification, RAG, and prompt injection have clicked.</p>
+        <Quiz questions={UC_QUIZ} title="Use Cases" />
+      </Section>
+
       <section className="mt-4 rounded-2xl border border-indigo-900/60 bg-indigo-950/30 p-8 text-center">
         <div className="mb-2 text-2xl">{completed ? '✅' : '🎯'}</div>
         <h3 className="mb-2 text-xl font-bold">
-          {completed ? 'Module Complete' : 'You\'ve reached the end of the map!'}
+          {completed ? 'Module Complete' : "You've reached the end of the map!"}
         </h3>
         <p className="mb-6 text-sm text-gray-400">
           {completed
-            ? 'You\'ve completed the entire AI Philosophy knowledge map.'
+            ? "You've completed the entire AI Philosophy knowledge map."
             : 'Mark this complete to finish your journey through the concept map.'}
         </p>
         {!completed && (

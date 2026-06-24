@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from 'react'
+﻿import { useState, type ReactNode } from 'react'
+import { Quiz, type QuizQuestion } from '../../components/Quiz'
 
 type ModuleProps = { onComplete: () => Promise<void>; completed: boolean }
 
@@ -329,6 +330,39 @@ function PromptPatterns() {
 
 // ─── Module export ────────────────────────────────────────────────────────────
 
+const PE_QUIZ: QuizQuestion[] = [
+  {
+    q: 'What is the key difference between a vague prompt and an effective one?',
+    options: ['Effective prompts are always shorter', 'Effective prompts specify role, context, format, and constraints — leaving nothing for the model to guess', 'Effective prompts use simpler vocabulary', 'Effective prompts always start with "Please"'],
+    answer: 1,
+    explanation: 'LLMs fill in ambiguity with statistically likely text. Specifying what you want (and what you do not want) narrows the output distribution to what you actually need.',
+  },
+  {
+    q: 'Chain-of-thought prompting works by:',
+    options: ['Providing more training examples', 'Asking the model to reason step-by-step before giving a final answer', 'Splitting the prompt into multiple API calls', 'Adding "think carefully" to the end of every prompt'],
+    answer: 1,
+    explanation: 'Showing or requesting intermediate reasoning steps causes the model to break problems down, which dramatically reduces errors on multi-step or arithmetic tasks.',
+  },
+  {
+    q: 'What is a system prompt?',
+    options: ['The first user message in a chat', 'Instructions placed before the conversation that set the model\'s role, persona, and constraints', 'A special token that controls output length', 'A prompt that automatically retries on failure'],
+    answer: 1,
+    explanation: "System prompts are out-of-conversation instructions — they shape the model's behavior across all turns: \"You are a concise technical writer. Never use bullet points.\"",
+  },
+  {
+    q: 'Few-shot prompting means:',
+    options: ['Using a small model for speed', 'Giving the model a few input→output examples before your actual question to demonstrate the desired pattern', 'Limiting the model to short responses', 'Running the prompt multiple times and picking the best'],
+    answer: 1,
+    explanation: 'Showing two or three examples of the desired format steers the model far more reliably than describing the format in words alone.',
+  },
+  {
+    q: 'Why does asking the model to "think step by step" help with complex questions?',
+    options: ['It adds more tokens, giving the model more memory', 'It forces the model to decompose the problem, which reduces compounding errors in multi-step reasoning', "It tricks the model into using a different neural pathway", 'It slows generation down so the model can recheck'],
+    answer: 1,
+    explanation: 'Auto-regressive models generate one token at a time. Generating intermediate steps gives the model correct partial information to condition on, reducing final-answer errors.',
+  },
+]
+
 export function PromptEngineering({ onComplete, completed }: ModuleProps) {
   return (
     <div className="mx-auto max-w-2xl px-6 py-12 text-white">
@@ -389,6 +423,11 @@ export function PromptEngineering({ onComplete, completed }: ModuleProps) {
           — no technical knowledge required.
         </p>
         <PromptPatterns />
+      </Section>
+
+      <Section number={5} title="Quiz Yourself">
+        <p className="mb-4 leading-relaxed text-gray-300">Check whether prompting techniques — few-shot, chain-of-thought, and system prompts — have clicked.</p>
+        <Quiz questions={PE_QUIZ} title="Prompt Engineering" />
       </Section>
 
       <section className="mt-4 rounded-2xl border border-indigo-900/60 bg-indigo-950/30 p-8 text-center">

@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from 'react'
+﻿import { useState, type ReactNode } from 'react'
+import { Quiz, type QuizQuestion } from '../../components/Quiz'
 
 import { ATTENTION_EXAMPLES } from '../../data/attentionData'
 
@@ -193,6 +194,39 @@ function MultiHeadDiagram() {
 
 // ─── Module export ────────────────────────────────────────────────────────────
 
+const ATTN_QUIZ: QuizQuestion[] = [
+  {
+    q: 'What does self-attention compute for each token?',
+    options: ['A fixed lookup from a dictionary', 'A weighted blend of all token representations, where weights reflect how relevant each other token is', 'The positional encoding of the token', 'The gradient of the embedding'],
+    answer: 1,
+    explanation: 'Attention scores how relevant every other token is, then produces a new representation that mixes in information from the most relevant ones.',
+  },
+  {
+    q: 'In "I went to the river bank", which word should "bank" attend to most to resolve its meaning?',
+    options: ['I', 'went', 'river', 'the'],
+    answer: 2,
+    explanation: '"river" disambiguates "bank" — without it, "bank" could mean a financial institution. Attention should give "river" high weight when processing "bank".',
+  },
+  {
+    q: 'What does the Query vector represent?',
+    options: ["The token's position in the sequence", '"What information am I looking for from other tokens?"', '"What information do I have that might be useful to others?"', '"How much should I contribute to the output?"'],
+    answer: 1,
+    explanation: 'The Query is the "search term" a token uses to find relevant information. Keys are what others offer; Values are what gets returned when selected.',
+  },
+  {
+    q: 'Why does scaled dot-product attention divide scores by √d_k?',
+    options: ['To normalise the output between 0 and 1', 'To prevent dot products from growing too large, which would saturate softmax and vanish gradients', 'To reduce the number of parameters', 'To speed up matrix multiplication'],
+    answer: 1,
+    explanation: 'In high dimensions, dot products grow large. Dividing by √d_k keeps values in a range where softmax has healthy, non-saturated gradients.',
+  },
+  {
+    q: 'What is the main benefit of multi-head attention?',
+    options: ['It is computationally cheaper', 'Each head specializes in a different type of linguistic relationship simultaneously', 'It eliminates the need for positional encoding', 'It allows longer context windows'],
+    answer: 1,
+    explanation: 'Different heads learn different patterns — one may track syntax, another coreference, another long-range semantics. Their outputs are concatenated for a richer representation.',
+  },
+]
+
 export function Attention({ onComplete, completed }: ModuleProps) {
   return (
     <div className="mx-auto max-w-2xl px-6 py-12 text-white">
@@ -267,6 +301,11 @@ export function Attention({ onComplete, completed }: ModuleProps) {
           GPT-4 uses many more. Each head adds another dimension of context that helps
           the model understand subtle meaning.
         </p>
+      </Section>
+
+      <Section number={4} title="Quiz Yourself">
+        <p className="mb-4 leading-relaxed text-gray-300">Check whether Query/Key/Value, scaling, and multi-head attention have clicked.</p>
+        <Quiz questions={ATTN_QUIZ} title="Attention" />
       </Section>
 
       {/* Completion */}
