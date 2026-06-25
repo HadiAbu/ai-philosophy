@@ -13,7 +13,7 @@ The 13 modules form a dependency graph — each one unlocks the next. Start with
 | Module | What it covers | Interactive |
 |---|---|---|
 | What is AI? | The training loop, weights, supervised vs unsupervised at a high level | Diagram |
-| Types of ML | Supervised, unsupervised, reinforcement learning — when to use each | Scatter plot with decision boundary |
+| Types of ML | Supervised, unsupervised, reinforcement learning — when to use each | Scatter plot, unsupervised clustering demo, RL grid world |
 | Neural Networks | Perceptrons, layers, the forward pass, XOR problem | Weight sliders, live network, TensorFlow.js XOR trainer |
 | Activations | ReLU, Sigmoid, Tanh, GeLU — why non-linearity matters | Live curve explorer |
 | Transformers | The architecture behind GPT, Claude, Gemini | Architecture diagram |
@@ -59,8 +59,11 @@ The 13 modules form a dependency graph — each one unlocks the next. Start with
 | Database | Turso (libSQL) — users, progress, refresh tokens |
 | Vector search | Turso sqlite-vec — RAG simulation |
 | Auth | JWT access tokens (15 min) + HttpOnly refresh cookies (7 days, rotated) |
-| Deployment | AWS App Runner (backend) + S3 + CloudFront (frontend) |
-| CI/CD | GitHub Actions → ECR → App Runner / S3 sync |
+| Deployment | AWS EC2 — Docker Compose with nginx, backend, and frontend containers |
+| Images | GHCR (`ghcr.io/hadiabu/ai-philosophy-*`) |
+| TLS / proxy | nginx — Let's Encrypt certs, rate limiting, HTTP→HTTPS redirect |
+| Analytics | PostHog |
+| CI/CD | GitHub Actions → GHCR → SSH deploy to EC2 |
 
 ---
 
@@ -140,7 +143,6 @@ aiphilosophy/
 │   │   │       └── users.py         # GET /users/me
 │   │   ├── core/
 │   │   │   ├── config.py            # Pydantic settings (env vars)
-│   │   │   ├── limits.py            # slowapi limiter instance
 │   │   │   └── security.py          # bcrypt, JWT, SHA-256 token hashing
 │   │   ├── db/
 │   │   │   ├── client.py            # Turso client + db_execute() with retry
@@ -171,17 +173,22 @@ aiphilosophy/
 │   │   │   └── api.ts               # Axios instance; silent refresh interceptor with lock
 │   │   └── pages/
 │   │       ├── auth/                # Login.tsx, Register.tsx
-│   │       ├── modules/             # One .tsx per concept node (13 total)
-│   │       ├── Home.tsx             # Concept map page
+│   │       ├── modules/             # One .tsx per concept node (14 total)
+│   │       ├── Landing.tsx          # Public landing page (/ route)
+│   │       ├── Home.tsx             # Concept map page (/home, protected)
 │   │       ├── Learn.tsx            # Module shell with lazy loading + ErrorBoundary
 │   │       └── Profile.tsx          # Progress overview
+│   ├── Dockerfile
 │   ├── Dockerfile.dev
 │   └── package.json
+├── nginx/
+│   └── nginx.conf                   # Reverse proxy, TLS, rate limiting
 ├── .github/
 │   └── workflows/
-│       ├── backend.yml              # test → build → push ECR → deploy App Runner
-│       └── frontend.yml             # typecheck → build → sync S3 → invalidate CloudFront
-├── docker-compose.yml
+│       ├── backend.yml              # test → build GHCR image → SSH deploy to EC2
+│       └── frontend.yml             # typecheck → build GHCR image → SSH deploy to EC2
+├── docker-compose.yml               # Local dev
+├── docker-compose.prod.yml          # Production (nginx + backend + frontend)
 ├── CLAUDE.md                        # Developer context for AI-assisted development
 └── README.md
 ```
@@ -201,7 +208,7 @@ All endpoints except `/health` require authentication unless noted.
 | POST | `/api/auth/logout` | None | Revokes refresh token, clears cookie. |
 | POST | `/api/auth/refresh` | Cookie | Rotates refresh token, returns new access token. |
 
-Rate limits: register 5/min · login 10/min · logout 20/min · refresh 20/min.
+Rate limiting is handled by nginx: auth endpoints 10 req/min (burst=5), all other API 60 req/min (burst=20). Returns `429` on excess.
 
 ### Users
 
@@ -290,7 +297,7 @@ Tables are created automatically on startup via `run_migrations()`. Expired and 
 | Refresh tokens | UUID v4 raw value stored only in HttpOnly + SameSite=Strict cookie; SHA-256 hash stored in DB |
 | Token rotation | Every `/refresh` call revokes the old token and issues a new one |
 | Input validation | Pydantic on all request bodies; parameterised SQL only |
-| Rate limiting | slowapi on all auth endpoints |
+| Rate limiting | nginx `limit_req_zone` — auth endpoints 10 req/min (burst=5), API 60 req/min (burst=20) |
 | CORS | Locked to configured origins; no PUT in allowed methods |
 | Security headers | CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, HSTS (production) — applied via pure ASGI middleware |
 
@@ -302,24 +309,26 @@ Both pipelines trigger only when files in their respective directories change.
 
 **Backend** (`.github/workflows/backend.yml`):
 1. Install dependencies + run 47 pytest tests (unit + integration, in-memory SQLite)
-2. On push to `master`: build Docker image → push to ECR → trigger App Runner deployment
+2. On push to `master`: build Docker image → push to GHCR → SSH into EC2 → `docker compose pull backend && up -d backend nginx`
 
 **Frontend** (`.github/workflows/frontend.yml`):
-1. TypeScript type check + Vite production build
-2. On push to `master`: build → sync to S3 → invalidate CloudFront distribution
+1. TypeScript type check
+2. On push to `master`: build Docker image (injects PostHog keys as build args) → push to GHCR → SSH into EC2 → `docker compose pull frontend && up -d frontend nginx`
+
+Both workflows dynamically whitelist the GitHub Actions runner's IP in the EC2 security group for SSH (port 22), then revoke it when done.
 
 ### Required GitHub secrets
 
 | Secret | Used by |
 |---|---|
-| `AWS_ACCESS_KEY_ID` | Both |
+| `AWS_ACCESS_KEY_ID` | Both (security group management) |
 | `AWS_SECRET_ACCESS_KEY` | Both |
 | `AWS_REGION` | Both |
-| `ECR_REPOSITORY` | Backend |
-| `APP_RUNNER_SERVICE_ARN` | Backend |
-| `VITE_API_URL` | Frontend |
-| `S3_BUCKET_NAME` | Frontend |
-| `CLOUDFRONT_DISTRIBUTION_ID` | Frontend |
+| `EC2_HOST` | Both |
+| `EC2_USER` | Both |
+| `EC2_SSH_KEY` | Both |
+| `VITE_POSTHOG_KEY` | Frontend |
+| `VITE_POSTHOG_HOST` | Frontend |
 
 
 ---
