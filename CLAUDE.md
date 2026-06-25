@@ -45,7 +45,6 @@ Active branch: `master`. One known ESLint error remains unfixed (see **Known iss
 - `libsql-client` **0.3.1** — Turso HTTP client (note: `libsql` is the newer official SDK; migration deferred)
 - `python-jose` — JWT encode/decode
 - `bcrypt` — password hashing (direct, NOT via passlib — CLAUDE.md previously said passlib, that was wrong)
-- `slowapi` — rate limiting
 - `pydantic-settings` — environment config
 
 ### Infrastructure
@@ -69,7 +68,7 @@ These must never be weakened. Every PR must preserve all of them.
 | Stale token cleanup | `_cleanup_tokens(user_id)` runs on every login and refresh, deletes that user's expired/revoked rows |
 | SQL | Parameterised only — never f-strings or string concatenation in SQL |
 | Input validation | Pydantic on all request bodies; email validated by `email-validator` |
-| Rate limiting | `@limiter.limit(...)` on all four auth endpoints |
+| Rate limiting | nginx `limit_req_zone` — `auth_zone` (10r/m, burst=5) on `/api/auth`, `api_zone` (60r/m, burst=20) on `/api` |
 | CORS | `allow_origins=settings.cors_origins`, `allow_methods=["GET","POST","DELETE"]` — no PUT |
 | Security headers | Pure ASGI middleware (`_SecurityHeadersMiddleware`) — CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, HSTS (production only) |
 | Cookie deletion | `_clear_refresh_cookie` passes `secure=settings.environment == "production"` to match how the cookie was set |
@@ -237,7 +236,6 @@ aiphilosophy/
 │   │   │       └── users.py
 │   │   ├── core/
 │   │   │   ├── config.py
-│   │   │   ├── limits.py
 │   │   │   └── security.py
 │   │   ├── db/
 │   │   │   ├── client.py
