@@ -18,7 +18,7 @@ async def test_get_progress_starts_empty(client):
 
 async def test_get_progress_requires_auth(client):
     resp = await client.get("/api/progress")
-    assert resp.status_code == 403
+    assert resp.status_code == 401
 
 
 # ─── POST /api/progress/{node_id} ─────────────────────────────────────────────
@@ -62,7 +62,7 @@ async def test_mark_complete_fine_tuning_node(client):
 
 async def test_mark_complete_requires_auth(client):
     resp = await client.post("/api/progress/what-is-ai")
-    assert resp.status_code == 403
+    assert resp.status_code == 401
 
 
 # ─── DELETE /api/progress/{node_id} ──────────────────────────────────────────
@@ -91,7 +91,7 @@ async def test_mark_incomplete_unknown_node(client):
 
 async def test_mark_incomplete_requires_auth(client):
     resp = await client.delete("/api/progress/what-is-ai")
-    assert resp.status_code == 403
+    assert resp.status_code == 401
 
 
 # ─── All 14 valid node IDs are accepted ───────────────────────────────────────
