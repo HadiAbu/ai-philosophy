@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useReducer, useRef, type ReactNode } from 'react'
+import { useCallback, useEffect, useReducer, useRef, useState, type ReactNode } from 'react'
 
-import { api, setAccessToken } from '../lib/api'
+import { api, setAccessToken, setAnonId } from '../lib/api'
 import { posthog } from '../lib/posthog'
 import { AuthContext } from './AuthContext'
+
+const ANON_ID_KEY = 'aiphilo_anon_id'
 
 interface AuthState {
   userId: string | null
@@ -22,8 +24,6 @@ function reducer(_state: AuthState, action: AuthAction): AuthState {
   }
 }
 
-// JWT payloads are base64url-encoded (- and _ instead of + and /).
-// atob() only handles standard base64, so normalise first.
 function parseUserIdFromToken(token: string): string {
   try {
     const base64Url = token.split('.')[1]
@@ -37,9 +37,18 @@ function parseUserIdFromToken(token: string): string {
   }
 }
 
+function getOrCreateAnonId(): string {
+  let id = localStorage.getItem(ANON_ID_KEY)
+  if (!id) {
+    id = crypto.randomUUID()
+    localStorage.setItem(ANON_ID_KEY, id)
+  }
+  return id
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, { userId: null, loading: true })
-  // Guard against React StrictMode double-invoking this effect in development.
+  const [requireAuth, setRequireAuth] = useState(true)
   const initialized = useRef(false)
 
   useEffect(() => {
@@ -47,13 +56,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initialized.current = true
 
     api
-      .post('/auth/refresh')
+      .get('/config')
       .then((res) => {
-        const token = res.data.access_token
-        setAccessToken(token)
-        const userId = parseUserIdFromToken(token)
-        dispatch({ type: 'SET_USER', userId })
-        posthog.identify(userId)
+        const flag = Boolean(res.data.require_auth)
+        setRequireAuth(flag)
+
+        if (!flag) {
+          const anonId = getOrCreateAnonId()
+          setAnonId(anonId)
+          dispatch({ type: 'SET_USER', userId: anonId })
+        } else {
+          api
+            .post('/auth/refresh')
+            .then((res) => {
+              const token = res.data.access_token
+              setAccessToken(token)
+              const userId = parseUserIdFromToken(token)
+              dispatch({ type: 'SET_USER', userId })
+              posthog.identify(userId)
+            })
+            .catch(() => dispatch({ type: 'CLEAR_USER' }))
+        }
       })
       .catch(() => dispatch({ type: 'CLEAR_USER' }))
 
@@ -88,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout }}>
+    <AuthContext.Provider value={{ ...state, requireAuth, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   )

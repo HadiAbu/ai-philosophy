@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     refresh_token_expire_days: int = 7
     cors_origins: list[str] = ["http://localhost:5173"]
     environment: Literal["development", "production"] = "development"
+    require_auth: bool = True
 
     class Config:
         env_file = ".env"

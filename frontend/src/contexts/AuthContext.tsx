@@ -3,6 +3,7 @@ import { createContext } from 'react'
 export interface AuthContextValue {
   userId: string | null
   loading: boolean
+  requireAuth: boolean
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>

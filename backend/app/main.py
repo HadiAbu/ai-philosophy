@@ -55,7 +55,7 @@ app.add_middleware(
     allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "DELETE"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_headers=["Authorization", "Content-Type", "X-Anon-Id"],
 )
 app.add_middleware(_SecurityHeadersMiddleware)
 
@@ -67,4 +67,9 @@ app.include_router(users.router, prefix="/api/users", tags=["users"])
 @app.get("/health")
 async def health() -> dict:
     return {"status": "ok"}
+
+
+@app.get("/api/config")
+async def config() -> dict:
+    return {"require_auth": settings.require_auth}
 # trigger

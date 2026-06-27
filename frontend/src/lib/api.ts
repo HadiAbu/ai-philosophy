@@ -6,14 +6,22 @@ export const api = axios.create({
 })
 
 let _accessToken: string | null = null
+let _anonId: string | null = null
 
 export function setAccessToken(token: string | null): void {
   _accessToken = token
 }
 
+export function setAnonId(id: string | null): void {
+  _anonId = id
+}
+
 api.interceptors.request.use((config) => {
   if (_accessToken) {
     config.headers.Authorization = `Bearer ${_accessToken}`
+  }
+  if (_anonId) {
+    config.headers['X-Anon-Id'] = _anonId
   }
   return config
 })

@@ -37,7 +37,7 @@ const FEATURES = [
 ]
 
 export function Landing() {
-  const { userId, loading } = useAuth()
+  const { userId, loading, requireAuth } = useAuth()
 
   if (loading) {
     return (
@@ -47,7 +47,10 @@ export function Landing() {
     )
   }
 
-  if (userId) return <Navigate to="/home" replace />
+  if (requireAuth && userId) return <Navigate to="/home" replace />
+
+  const ctaPath = requireAuth ? '/register' : '/home'
+  const ctaLabel = requireAuth ? 'Start learning — it\'s free →' : 'Start learning →'
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -55,18 +58,29 @@ export function Landing() {
       <nav className="absolute left-0 right-0 top-0 z-10 flex items-center justify-between px-6 py-4">
         <span className="text-base font-bold tracking-tight text-white">AI Philosophy</span>
         <div className="flex items-center gap-3">
-          <Link
-            to="/login"
-            className="text-sm text-gray-400 transition-colors hover:text-white"
-          >
-            Sign in
-          </Link>
-          <Link
-            to="/register"
-            className="rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-500"
-          >
-            Start free
-          </Link>
+          {requireAuth ? (
+            <>
+              <Link
+                to="/login"
+                className="text-sm text-gray-400 transition-colors hover:text-white"
+              >
+                Sign in
+              </Link>
+              <Link
+                to="/register"
+                className="rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-500"
+              >
+                Start free
+              </Link>
+            </>
+          ) : (
+            <Link
+              to="/home"
+              className="rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-500"
+            >
+              Start learning
+            </Link>
+          )}
         </div>
       </nav>
 
@@ -99,17 +113,19 @@ export function Landing() {
 
           <div className="flex flex-wrap justify-center gap-4">
             <Link
-              to="/register"
+              to={ctaPath}
               className="rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-indigo-500"
             >
-              Start learning — it's free →
+              {ctaLabel}
             </Link>
-            <Link
-              to="/login"
-              className="rounded-lg border border-gray-700 px-6 py-3 text-sm font-semibold text-gray-300 transition-colors hover:border-gray-500 hover:text-white"
-            >
-              Sign in
-            </Link>
+            {requireAuth && (
+              <Link
+                to="/login"
+                className="rounded-lg border border-gray-700 px-6 py-3 text-sm font-semibold text-gray-300 transition-colors hover:border-gray-500 hover:text-white"
+              >
+                Sign in
+              </Link>
+            )}
           </div>
         </div>
 
@@ -149,7 +165,7 @@ export function Landing() {
             {MODULES.map(({ icon, label }) => (
               <Link
                 key={label}
-                to="/register"
+                to={ctaPath}
                 className="group flex items-center gap-3 rounded-xl border border-gray-800 bg-gray-900/40 px-4 py-3 transition-all hover:border-indigo-800/60 hover:bg-indigo-950/20"
               >
                 <span className="text-xl">{icon}</span>
@@ -160,9 +176,11 @@ export function Landing() {
             ))}
           </div>
 
-          <p className="mt-6 text-center text-xs text-gray-600">
-            Sign up to unlock the interactive concept map and track your progress.
-          </p>
+          {requireAuth && (
+            <p className="mt-6 text-center text-xs text-gray-600">
+              Sign up to unlock the interactive concept map and track your progress.
+            </p>
+          )}
         </div>
       </section>
 
@@ -171,10 +189,10 @@ export function Landing() {
         <h2 className="mb-3 text-3xl font-bold">Ready to start?</h2>
         <p className="mb-8 text-gray-400">It's free. No credit card required.</p>
         <Link
-          to="/register"
+          to={ctaPath}
           className="rounded-lg bg-indigo-600 px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-indigo-500"
         >
-          Create account →
+          {requireAuth ? 'Create account →' : 'Start learning →'}
         </Link>
       </section>
 
