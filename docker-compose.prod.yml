@@ -22,6 +22,8 @@ services:
     pull_policy: always
     expose:
       - "8000"
+    environment:
+      - REQUIRE_AUTH=false
     env_file:
       - ./backend/.env
     restart: unless-stopped
