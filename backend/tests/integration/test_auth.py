@@ -124,7 +124,7 @@ async def test_refresh_without_cookie(client):
 
 async def test_protected_endpoint_without_token(client):
     resp = await client.get("/api/progress")
-    assert resp.status_code == 403  # HTTPBearer returns 403 when header is absent
+    assert resp.status_code == 401
 
 
 async def test_protected_endpoint_with_invalid_token(client):

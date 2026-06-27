@@ -4,6 +4,7 @@ import os
 os.environ.setdefault("TURSO_URL", "libsql://test.localhost")
 os.environ.setdefault("TURSO_AUTH_TOKEN", "test-token")
 os.environ.setdefault("JWT_SECRET_KEY", "test-secret-key-for-testing-that-is-long-enough")
+os.environ["REQUIRE_AUTH"] = "true"  # always run tests with auth on, regardless of local .env
 
 import pytest_asyncio
 import aiosqlite
