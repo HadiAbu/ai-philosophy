@@ -94,6 +94,7 @@ jobs:
             git pull
             docker compose -f docker-compose.prod.yml pull frontend
             docker compose -f docker-compose.prod.yml up -d frontend nginx
+            docker image prune -f
 
       - name: Revoke Runner IP
         if: always()

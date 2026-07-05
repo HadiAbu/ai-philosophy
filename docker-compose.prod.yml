@@ -16,6 +16,11 @@ services:
       frontend:
         condition: service_started
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   backend:
     image: ghcr.io/hadiabu/ai-philosophy-backend:latest
@@ -33,6 +38,11 @@ services:
       timeout: 5s
       retries: 3
       start_period: 15s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   frontend:
     image: ghcr.io/hadiabu/ai-philosophy-frontend:latest
@@ -40,4 +50,9 @@ services:
     expose:
       - "80"
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
