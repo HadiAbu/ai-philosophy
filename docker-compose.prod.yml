@@ -28,7 +28,7 @@ services:
     expose:
       - "8000"
     environment:
-      - REQUIRE_AUTH=false
+      - REQUIRE_AUTH=true
     env_file:
       - ./backend/.env
     restart: unless-stopped
