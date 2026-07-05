@@ -97,6 +97,7 @@ jobs:
             docker compose -f docker-compose.prod.yml pull backend
             docker compose -f docker-compose.prod.yml up -d backend nginx
             docker image prune -f
+            crontab -l 2>/dev/null | grep -qF "docker system prune" || (crontab -l 2>/dev/null; echo "0 2 * * 0 docker system prune -f") | crontab -
 
       # 7. Cleanup: Revoke IP access (runs even if deployment steps fail)
       - name: Revoke Runner IP
