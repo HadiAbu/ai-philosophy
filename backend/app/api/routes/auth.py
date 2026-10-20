@@ -1,11 +1,10 @@
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Cookie, HTTPException, Request, Response
+from fastapi import APIRouter, Cookie, HTTPException, Response
 from fastapi.responses import JSONResponse
 
 from app.core.config import settings
-from app.core.limits import limiter
 from app.core.security import (
     create_access_token,
     create_refresh_token,
@@ -53,8 +52,7 @@ async def _cleanup_tokens(user_id: str) -> None:
 
 
 @router.post("/register", status_code=201)
-@limiter.limit("5/minute")
-async def register(request: Request, body: RegisterRequest) -> JSONResponse:
+async def register(body: RegisterRequest) -> JSONResponse:
     result = await db_execute(
         "SELECT id FROM users WHERE email = ?", [body.email]
     )
@@ -89,8 +87,7 @@ async def register(request: Request, body: RegisterRequest) -> JSONResponse:
 
 
 @router.post("/login")
-@limiter.limit("10/minute")
-async def login(request: Request, body: LoginRequest) -> JSONResponse:
+async def login(body: LoginRequest) -> JSONResponse:
     result = await db_execute(
         "SELECT id, password_hash FROM users WHERE email = ?", [body.email]
     )
@@ -121,9 +118,7 @@ async def login(request: Request, body: LoginRequest) -> JSONResponse:
 
 
 @router.post("/logout")
-@limiter.limit("20/minute")
 async def logout(
-    request: Request,
     refresh_token: str | None = Cookie(default=None),
 ) -> JSONResponse:
     if refresh_token:
@@ -138,9 +133,7 @@ async def logout(
 
 
 @router.post("/refresh")
-@limiter.limit("20/minute")
 async def refresh(
-    request: Request,
     refresh_token: str | None = Cookie(default=None),
 ) -> JSONResponse:
     if not refresh_token:

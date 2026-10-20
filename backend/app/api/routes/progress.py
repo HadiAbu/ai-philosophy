@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 
-from app.api.deps import get_current_user
+from app.api.deps import get_user_id
 from app.db.client import db_execute
 
 router = APIRouter()
@@ -16,7 +16,7 @@ _VALID_NODES = {
 
 
 @router.get("")
-async def get_progress(user_id: str = Depends(get_current_user)) -> JSONResponse:
+async def get_progress(user_id: str = Depends(get_user_id)) -> JSONResponse:
     result = await db_execute(
         "SELECT node_id FROM progress WHERE user_id = ?", [user_id]
     )
@@ -26,7 +26,7 @@ async def get_progress(user_id: str = Depends(get_current_user)) -> JSONResponse
 @router.post("/{node_id}")
 async def mark_complete(
     node_id: str,
-    user_id: str = Depends(get_current_user),
+    user_id: str = Depends(get_user_id),
 ) -> JSONResponse:
     if node_id not in _VALID_NODES:
         raise HTTPException(status_code=404, detail="Unknown node")
@@ -42,7 +42,7 @@ async def mark_complete(
 @router.delete("/{node_id}")
 async def mark_incomplete(
     node_id: str,
-    user_id: str = Depends(get_current_user),
+    user_id: str = Depends(get_user_id),
 ) -> JSONResponse:
     if node_id not in _VALID_NODES:
         raise HTTPException(status_code=404, detail="Unknown node")

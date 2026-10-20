@@ -3,7 +3,9 @@ import { useAuth } from '../hooks/useAuth'
 import type { ReactNode } from 'react'
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
-  const { userId, loading } = useAuth()
+  const { userId, loading, requireAuth } = useAuth()
+
+  if (!requireAuth) return <>{children}</>
 
   if (loading) {
     return (

@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from 'react'
+﻿import { useState, type ReactNode } from 'react'
+import { Quiz, type QuizQuestion } from '../../components/Quiz'
 
 type ModuleProps = { onComplete: () => Promise<void>; completed: boolean }
 
@@ -364,6 +365,39 @@ function ComparisonTable() {
 
 // ─── Module export ────────────────────────────────────────────────────────────
 
+const FT_QUIZ: QuizQuestion[] = [
+  {
+    q: 'What is fine-tuning in one sentence?',
+    options: ['Training a model from scratch on task-specific data', 'Continuing to train a pre-trained model on a smaller, task-specific dataset to adapt its behavior', 'Adjusting the tokenizer vocabulary for a new domain', 'Compressing a large model into a smaller one'],
+    answer: 1,
+    explanation: 'Fine-tuning reuses a model that already understands language and just teaches it the specific format, style, or domain knowledge you need.',
+  },
+  {
+    q: 'What makes LoRA (Low-Rank Adaptation) different from full fine-tuning?',
+    options: ['It requires more data', 'It freezes the original model weights and only trains small adapter matrices — using far less compute and memory', 'It modifies the tokenizer instead of the weights', 'It trains only the final output layer'],
+    answer: 1,
+    explanation: 'LoRA inserts small trainable matrices alongside frozen original weights. The adapters learn the delta, so you get fine-tuned behavior with a fraction of the cost.',
+  },
+  {
+    q: 'When should you prefer RAG over fine-tuning to add new knowledge?',
+    options: ['When you have thousands of training examples', 'When the knowledge changes frequently, you need citations, or you cannot afford to retrain', 'When the model is smaller than 7B parameters', 'When speed of response is critical'],
+    answer: 1,
+    explanation: 'RAG retrieves at inference time — update the document store and the model instantly knows new facts. Fine-tuning bakes knowledge into weights, requiring a full retrain for updates.',
+  },
+  {
+    q: 'What does RLHF stand for, and what problem does it solve?',
+    options: ['Recursive Learning with Helpful Feedback — reduces model size', 'Reinforcement Learning from Human Feedback — aligns model outputs with human preferences', 'Rule-based Learning from Historical Feedback — improves retrieval', 'Ranked Loss with Hard-negative Fine-tuning — improves embeddings'],
+    answer: 1,
+    explanation: 'RLHF trains a reward model on human comparisons, then uses RL to fine-tune the LLM to maximise that reward — making the model more helpful, harmless, and honest.',
+  },
+  {
+    q: 'Why does fine-tuning need far fewer examples than pre-training?',
+    options: ['Fine-tuning uses a higher learning rate', 'The model already has general language knowledge; fine-tuning just adjusts its behavior for a specific task', 'Fine-tuning only updates the last layer', 'Smaller models always need less data'],
+    answer: 1,
+    explanation: 'Pre-training teaches the model everything about language from billions of tokens. Fine-tuning just redirects existing capabilities toward a specific format, style, or domain.',
+  },
+]
+
 export function FineTuning({ onComplete, completed }: ModuleProps) {
   return (
     <div className="mx-auto max-w-2xl px-6 py-12 text-white">
@@ -486,6 +520,11 @@ export function FineTuning({ onComplete, completed }: ModuleProps) {
           LLaMA, Mistral, and Phi can be fine-tuned with tools like Hugging Face's
           PEFT library or Unsloth on hardware most developers already have access to.
         </p>
+      </Section>
+
+      <Section number={6} title="Quiz Yourself">
+        <p className="mb-4 leading-relaxed text-gray-300">Check whether fine-tuning, LoRA, RLHF, and RAG vs. fine-tuning have clicked.</p>
+        <Quiz questions={FT_QUIZ} title="Fine-Tuning" />
       </Section>
 
       <section className="mt-4 rounded-2xl border border-indigo-900/60 bg-indigo-950/30 p-8 text-center">

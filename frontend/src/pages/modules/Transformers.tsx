@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+﻿import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { Quiz, type QuizQuestion } from '../../components/Quiz'
 
 type ModuleProps = { onComplete: () => Promise<void>; completed: boolean }
 
@@ -465,6 +466,39 @@ function InteractiveTransformerBlock() {
 
 // ─── Module export ────────────────────────────────────────────────────────────
 
+const TF_QUIZ: QuizQuestion[] = [
+  {
+    q: 'What key limitation of RNNs did Transformers solve?',
+    options: ['Required too many GPU cores', 'Sequential processing — RNNs struggled to relate tokens far apart in a long sequence', 'Could only handle fixed-length inputs', 'Needed too much labelled data'],
+    answer: 1,
+    explanation: 'RNNs process tokens one by one; early-token information fades. Transformers attend to all tokens simultaneously, solving long-range dependencies.',
+  },
+  {
+    q: 'In self-attention, each token generates three vectors. What are they?',
+    options: ['Input, Hidden, Output', 'Encoder, Decoder, Memory', 'Query, Key, Value', 'Position, Weight, Gradient'],
+    answer: 2,
+    explanation: 'Query = "what am I looking for?", Key = "what do I contain?", Value = "what I pass if selected". Scores = Query · Key; output = weighted sum of Values.',
+  },
+  {
+    q: 'Why do Transformers need positional encoding?',
+    options: ['To make embeddings smaller', 'Self-attention is order-independent — without it, "dog bites man" and "man bites dog" look identical', 'To improve training speed', 'To handle punctuation correctly'],
+    answer: 1,
+    explanation: "Self-attention treats tokens as a bag. Positional encodings inject each token's position into its embedding to preserve word order.",
+  },
+  {
+    q: 'A GPT-style "decoder-only" model uses masked attention. What does this mean?',
+    options: ['It can only decode, not encode', 'Each token can only attend to previous tokens — making it naturally suited for text generation', 'It has no encoder stack', 'It cannot process sequences longer than 512 tokens'],
+    answer: 1,
+    explanation: 'Masked attention ensures each token only sees earlier tokens. This makes decoder-only models auto-regressive generators: predict the next token from all previous ones.',
+  },
+  {
+    q: 'What is the main advantage of multi-head attention?',
+    options: ['It is computationally cheaper', 'Each head can specialize in a different relationship (syntax, coreference, semantics) simultaneously', 'It eliminates positional encoding', 'It allows longer context windows'],
+    answer: 1,
+    explanation: 'Different heads learn different patterns — one may track syntax, another semantic similarity, another long-range coreference. Their outputs are concatenated for a richer representation.',
+  },
+]
+
 export function Transformers({ onComplete, completed }: ModuleProps) {
   return (
     <div className="mx-auto max-w-2xl px-6 py-12 text-white">
@@ -551,6 +585,11 @@ export function Transformers({ onComplete, completed }: ModuleProps) {
           <span className="text-gray-300">Attention</span> — each go deep on one half of
           how a transformer works. Complete this node to unlock both.
         </p>
+      </Section>
+
+      <Section number={5} title="Quiz Yourself">
+        <p className="mb-4 leading-relaxed text-gray-300">Check whether attention, positional encoding, and the Transformer architecture have clicked.</p>
+        <Quiz questions={TF_QUIZ} title="Transformers" />
       </Section>
 
       {/* Completion */}

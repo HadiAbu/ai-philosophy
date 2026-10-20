@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+﻿import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { Quiz, type QuizQuestion } from '../../components/Quiz'
 
 import { ANALOGY_WORDS, EMB_CATEGORIES, WORD_POINTS, type EmbCategory } from '../../data/wordEmbeddings'
 
@@ -147,6 +148,39 @@ function WordScatter({ activeCategories }: { activeCategories: Set<EmbCategory> 
 
 const ALL_CATEGORIES = Object.keys(EMB_CATEGORIES) as EmbCategory[]
 
+const EMB_QUIZ: QuizQuestion[] = [
+  {
+    q: 'What is a word embedding?',
+    options: ['A compressed image of a word', 'A high-dimensional vector that represents a word based on the contexts it appears in during training', 'A dictionary definition stored as text', 'A one-hot encoded representation'],
+    answer: 1,
+    explanation: 'Embeddings are dense vectors learned from large text. Words that appear in similar contexts end up near each other in vector space.',
+  },
+  {
+    q: 'king – man + woman ≈ queen. What does this demonstrate?',
+    options: ['Language models can solve equations', 'Semantic relationships are encoded as directions in embedding space, so you can do arithmetic on meaning', 'The model memorized this specific example', 'Word vectors always sum to zero'],
+    answer: 1,
+    explanation: '"Royalty" and "gender" are actual geometric directions in the embedding space. Subtracting "man-ness" and adding "woman-ness" lands near "queen".',
+  },
+  {
+    q: 'Why is cosine similarity used instead of Euclidean distance for comparing embeddings?',
+    options: ['It is faster to compute', 'It measures the angle between vectors, so it captures semantic similarity regardless of vector magnitude', 'It always returns a value between 0 and 1', 'It works better for sparse vectors'],
+    answer: 1,
+    explanation: 'Two identical-meaning words with different frequencies might have vectors of different lengths. Cosine similarity normalizes for length, comparing direction (meaning) alone.',
+  },
+  {
+    q: 'How are word embeddings typically learned?',
+    options: ['By hand-labelling word meanings', 'By training a model to predict surrounding words (or vice versa) on massive text corpora', 'By counting word frequencies', 'By decomposing a thesaurus into vectors'],
+    answer: 1,
+    explanation: 'Models like Word2Vec or the embedding layers of LLMs learn vectors by predicting context. Words that appear together frequently end up with similar vectors.',
+  },
+  {
+    q: "Why can't you just use one-hot encoding instead of embeddings?",
+    options: ['One-hot vectors are too small', 'One-hot vectors are huge, sparse, and encode no similarity — "cat" and "dog" are as far apart as "cat" and "database"', 'One-hot encoding is too slow to compute', 'LLMs do not support integer inputs'],
+    answer: 1,
+    explanation: 'One-hot vectors have one 1 and all other values 0. Every word is orthogonal to every other — there is no notion of semantic closeness.',
+  },
+]
+
 export function Embeddings({ onComplete, completed }: ModuleProps) {
   const [active, setActive] = useState<Set<EmbCategory>>(new Set(ALL_CATEGORIES))
 
@@ -254,6 +288,11 @@ export function Embeddings({ onComplete, completed }: ModuleProps) {
           started thinking. Those 768 numbers per word are what let the AI understand the
           rich, context-dependent meaning of language.
         </p>
+      </Section>
+
+      <Section number={4} title="Quiz Yourself">
+        <p className="mb-4 leading-relaxed text-gray-300">Check whether vectors, similarity, and how embeddings are learned have clicked.</p>
+        <Quiz questions={EMB_QUIZ} title="Embeddings" />
       </Section>
 
       <section className="mt-4 rounded-2xl border border-indigo-900/60 bg-indigo-950/30 p-8 text-center">

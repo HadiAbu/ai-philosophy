@@ -2,13 +2,10 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from slowapi import _rate_limit_exceeded_handler
-from slowapi.errors import RateLimitExceeded
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 from app.api.routes import auth, progress, users
 from app.core.config import settings
-from app.core.limits import limiter
 from app.db.client import close_client
 from app.db.migrations import run_migrations
 
@@ -53,15 +50,12 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="AI Philosophy API", lifespan=lifespan)
 
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "DELETE"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_headers=["Authorization", "Content-Type", "X-Anon-Id"],
 )
 app.add_middleware(_SecurityHeadersMiddleware)
 
@@ -71,6 +65,12 @@ app.include_router(users.router, prefix="/api/users", tags=["users"])
 
 
 @app.get("/health")
+@app.get("/api/health")  # reachable through nginx, used by the deploy smoke test
 async def health() -> dict:
     return {"status": "ok"}
+
+
+@app.get("/api/config")
+async def config() -> dict:
+    return {"require_auth": settings.require_auth}
 # trigger

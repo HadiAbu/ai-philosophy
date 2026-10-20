@@ -15,7 +15,7 @@ async def test_get_me(client):
 
 async def test_get_me_requires_auth(client):
     resp = await client.get("/api/users/me")
-    assert resp.status_code == 403
+    assert resp.status_code == 401
 
 
 async def test_get_me_invalid_token(client):

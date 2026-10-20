@@ -4,6 +4,7 @@ import os
 os.environ.setdefault("TURSO_URL", "libsql://test.localhost")
 os.environ.setdefault("TURSO_AUTH_TOKEN", "test-token")
 os.environ.setdefault("JWT_SECRET_KEY", "test-secret-key-for-testing-that-is-long-enough")
+os.environ["REQUIRE_AUTH"] = "true"  # always run tests with auth on, regardless of local .env
 
 import pytest_asyncio
 import aiosqlite
@@ -45,7 +46,6 @@ async def client():
     Yields an httpx.AsyncClient wired to the FastAPI app with:
     - An in-memory SQLite DB replacing every db_execute call
     - Migrations and DB teardown mocked out
-    - A fresh rate-limit counter so tests don't bleed into each other
     """
     conn = await aiosqlite.connect(":memory:")
     conn.row_factory = aiosqlite.Row
@@ -68,13 +68,6 @@ async def client():
 
     try:
         from app.main import app
-        from app.core.limits import limiter as _rate_limiter
-
-        # The @limiter.limit() decorators capture the original limiter object from
-        # limits.py in their closure, so replacing app.state.limiter isn't enough.
-        # Resetting the underlying MemoryStorage is the only reliable way to clear
-        # rate-limit counts between tests.
-        _rate_limiter._storage.reset()
 
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
             yield ac

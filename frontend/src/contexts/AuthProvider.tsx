@@ -1,8 +1,11 @@
-import { useCallback, useEffect, useReducer, useRef, type ReactNode } from 'react'
+import { useCallback, useEffect, useReducer, useRef, useState, type ReactNode } from 'react'
 
-import { api, setAccessToken } from '../lib/api'
+import { api, setAccessToken, setAnonId } from '../lib/api'
 import { posthog } from '../lib/posthog'
 import { AuthContext } from './AuthContext'
+
+const ANON_ID_KEY = 'aiphilo_anon_id'
+const GUEST_ID_KEY = 'aiphilo_guest_id'
 
 interface AuthState {
   userId: string | null
@@ -22,8 +25,6 @@ function reducer(_state: AuthState, action: AuthAction): AuthState {
   }
 }
 
-// JWT payloads are base64url-encoded (- and _ instead of + and /).
-// atob() only handles standard base64, so normalise first.
 function parseUserIdFromToken(token: string): string {
   try {
     const base64Url = token.split('.')[1]
@@ -37,29 +38,74 @@ function parseUserIdFromToken(token: string): string {
   }
 }
 
+function getOrCreateAnonId(): string {
+  let id = localStorage.getItem(ANON_ID_KEY)
+  if (!id) {
+    id = crypto.randomUUID()
+    localStorage.setItem(ANON_ID_KEY, id)
+  }
+  return id
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, { userId: null, loading: true })
-  // Guard against React StrictMode double-invoking this effect in development.
+  const [requireAuth, setRequireAuth] = useState(true)
+  const [isGuest, setIsGuest] = useState(false)
   const initialized = useRef(false)
 
   useEffect(() => {
     if (initialized.current) return
     initialized.current = true
 
+    // Guest session takes priority — no network call needed.
+    const guestId = localStorage.getItem(GUEST_ID_KEY)
+    if (guestId) {
+      setIsGuest(true)
+      dispatch({ type: 'SET_USER', userId: guestId })
+
+      const onExpired = () => dispatch({ type: 'CLEAR_USER' })
+      window.addEventListener('auth:expired', onExpired)
+      return () => window.removeEventListener('auth:expired', onExpired)
+    }
+
     api
-      .post('/auth/refresh')
+      .get('/config')
       .then((res) => {
-        const token = res.data.access_token
-        setAccessToken(token)
-        const userId = parseUserIdFromToken(token)
-        dispatch({ type: 'SET_USER', userId })
-        posthog.identify(userId)
+        const flag = Boolean(res.data.require_auth)
+        setRequireAuth(flag)
+
+        if (!flag) {
+          const anonId = getOrCreateAnonId()
+          setAnonId(anonId)
+          dispatch({ type: 'SET_USER', userId: anonId })
+        } else {
+          api
+            .post('/auth/refresh')
+            .then((res) => {
+              const token = res.data.access_token
+              setAccessToken(token)
+              const userId = parseUserIdFromToken(token)
+              dispatch({ type: 'SET_USER', userId })
+              posthog.identify(userId)
+            })
+            .catch(() => dispatch({ type: 'CLEAR_USER' }))
+        }
       })
       .catch(() => dispatch({ type: 'CLEAR_USER' }))
 
     const onExpired = () => dispatch({ type: 'CLEAR_USER' })
     window.addEventListener('auth:expired', onExpired)
     return () => window.removeEventListener('auth:expired', onExpired)
+  }, [])
+
+  const loginAsGuest = useCallback(() => {
+    let guestId = localStorage.getItem(GUEST_ID_KEY)
+    if (!guestId) {
+      guestId = crypto.randomUUID()
+      localStorage.setItem(GUEST_ID_KEY, guestId)
+    }
+    setIsGuest(true)
+    dispatch({ type: 'SET_USER', userId: guestId })
   }, [])
 
   const login = useCallback(async (email: string, password: string) => {
@@ -81,14 +127,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const logout = useCallback(async () => {
+    if (isGuest) {
+      localStorage.removeItem(GUEST_ID_KEY)
+      setIsGuest(false)
+      dispatch({ type: 'CLEAR_USER' })
+      return
+    }
     await api.post('/auth/logout').catch(() => null)
     setAccessToken(null)
     dispatch({ type: 'CLEAR_USER' })
     posthog.reset()
-  }, [])
+  }, [isGuest])
 
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout }}>
+    <AuthContext.Provider value={{ ...state, requireAuth, isGuest, login, register, logout, loginAsGuest }}>
       {children}
     </AuthContext.Provider>
   )

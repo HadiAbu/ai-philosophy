@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from 'react'
+﻿import { useState, type ReactNode } from 'react'
+import { Quiz, type QuizQuestion } from '../../components/Quiz'
 
 type ModuleProps = { onComplete: () => Promise<void>; completed: boolean }
 
@@ -472,6 +473,39 @@ function ModernActivations() {
 
 // ─── Module export ────────────────────────────────────────────────────────────
 
+const ACT_QUIZ: QuizQuestion[] = [
+  {
+    q: 'What is the main problem with sigmoid activation in deep networks?',
+    options: ['It outputs values above 1', 'Vanishing gradients — its gradient is tiny, so early-layer weights stop updating', 'It is too slow to compute', 'It produces negative values'],
+    answer: 1,
+    explanation: 'Sigmoid squashes values into (0, 1) with a max gradient of 0.25. Multiplying many small gradients across deep layers causes them to vanish — early layers stop learning.',
+  },
+  {
+    q: 'ReLU(x) is defined as:',
+    options: ['x²', 'max(0, x)', '1 / (1 + e^–x)', '|x|'],
+    answer: 1,
+    explanation: 'ReLU (Rectified Linear Unit) passes positive values unchanged and clamps negatives to zero.',
+  },
+  {
+    q: 'What is the "dead neuron" problem in ReLU networks?',
+    options: ['Neurons that learn identical weights', 'Neurons whose inputs are always negative, making their gradient permanently zero so they never update', 'Neurons with too many connections', 'Neurons pruned after training'],
+    answer: 1,
+    explanation: 'If a ReLU neuron always receives negative input, it always outputs 0. With zero gradient, its weights never update — permanently inactive.',
+  },
+  {
+    q: 'Why did GeLU / SiLU replace ReLU in many modern transformers?',
+    options: ['They are faster to compute', 'They allow small negative outputs, providing smoother gradients and slightly better performance at scale', 'They require fewer parameters', 'They work better on CPUs'],
+    answer: 1,
+    explanation: 'GeLU smoothly interpolates between 0 and x rather than hard-clamping, giving gentler gradient flow — beneficial when training large models.',
+  },
+  {
+    q: 'Softmax is typically used as the activation for:',
+    options: ['Hidden layers in a deep network', 'The input layer', 'The final output layer of a classifier, producing a probability distribution over all classes', 'Convolutional feature maps'],
+    answer: 2,
+    explanation: 'Softmax converts raw scores into probabilities that sum to 1. It is ideal for the output layer of a multi-class classifier.',
+  },
+]
+
 export function Activations({ onComplete, completed }: ModuleProps) {
   return (
     <div className="mx-auto max-w-2xl px-6 py-12 text-white">
@@ -542,6 +576,11 @@ export function Activations({ onComplete, completed }: ModuleProps) {
           generate text one word at a time (LLaMA family). Researchers are still
           studying exactly why.
         </p>
+      </Section>
+
+      <Section number={5} title="Quiz Yourself">
+        <p className="mb-4 leading-relaxed text-gray-300">Check whether activation functions and their trade-offs have clicked.</p>
+        <Quiz questions={ACT_QUIZ} title="Activations" />
       </Section>
 
       <section className="mt-4 rounded-2xl border border-indigo-900/60 bg-indigo-950/30 p-8 text-center">

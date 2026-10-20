@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from 'react'
+﻿import { useState, type ReactNode } from 'react'
+import { Quiz, type QuizQuestion } from '../../components/Quiz'
 
 type ModuleProps = { onComplete: () => Promise<void>; completed: boolean }
 
@@ -263,6 +264,39 @@ function BPESteps() {
 
 // ─── Module export ────────────────────────────────────────────────────────────
 
+const TOK_QUIZ: QuizQuestion[] = [
+  {
+    q: "Why don't language models simply use whole words as their basic unit?",
+    options: ['Words are too short to carry meaning', 'The vocabulary would be unmanageably large and new words would be impossible to handle', 'Words contain too many characters', "Models can't store text in UTF-8"],
+    answer: 1,
+    explanation: 'English has hundreds of thousands of words; new ones appear constantly. Subword tokenization handles any text with a compact, fixed vocabulary.',
+  },
+  {
+    q: 'What does Byte Pair Encoding (BPE) do?',
+    options: ['Splits every word into individual characters permanently', 'Starts with characters and iteratively merges the most frequent adjacent pair until the vocabulary size is reached', 'Assigns a random ID to each word', 'Compresses text using Huffman coding'],
+    answer: 1,
+    explanation: 'BPE builds its vocabulary by repeatedly merging the most common adjacent pair. Common words end up as single tokens; rare ones stay split into subwords.',
+  },
+  {
+    q: 'After tokenization, what happens to each token?',
+    options: ['It is converted to audio', 'It is mapped to a unique integer ID, which is used to look up a dense embedding vector', 'It is sent to the attention layer as raw text', 'It is compressed with gzip'],
+    answer: 1,
+    explanation: 'Tokens become integer IDs. The model looks each ID up in an embedding table to get a dense vector — the actual input to the transformer layers.',
+  },
+  {
+    q: 'Why does GPT-4 charge by token rather than by word?',
+    options: ['Because words are ambiguous to count', 'Processing cost scales with the number of tokens the model must attend to, not word count', 'Because the API measures bytes', 'Tokens are always longer than words'],
+    answer: 1,
+    explanation: 'Each token requires compute in every attention head. Cost is proportional to sequence length in tokens, so that is what billing is based on.',
+  },
+  {
+    q: '"unhappiness" is likely split into subword tokens like "un" + "happiness". Why?',
+    options: ['The tokenizer removes all prefixes', "It's uncommon enough that it was never merged into a single high-frequency token during BPE training", 'It has too many characters for one token', 'All words starting with "un" are always split'],
+    answer: 1,
+    explanation: 'BPE only merges pairs that appear frequently. "unhappiness" is rare, so its parts never reached the frequency threshold for a single merged token.',
+  },
+]
+
 export function Tokenization({ onComplete, completed }: ModuleProps) {
   return (
     <div className="mx-auto max-w-2xl px-6 py-12 text-white">
@@ -351,6 +385,11 @@ export function Tokenization({ onComplete, completed }: ModuleProps) {
           <p className="text-gray-500 mt-1 mb-1">→ embed →</p>
           <p className="text-purple-300">[[0.23, -0.81, …], [0.55, 0.12, …], [-0.04, 0.77, …]]</p>
         </div>
+      </Section>
+
+      <Section number={5} title="Quiz Yourself">
+        <p className="mb-4 leading-relaxed text-gray-300">Check whether tokens, BPE, and the text-to-numbers pipeline have clicked.</p>
+        <Quiz questions={TOK_QUIZ} title="Tokenization" />
       </Section>
 
       {/* Completion */}

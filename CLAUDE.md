@@ -8,7 +8,7 @@ Developer context for anyone (human or AI) working in this codebase. Read this f
 
 **AI Philosophy** is a visual, interactive educational website that teaches how AI works — targeted at people with no technical background. It is not a video course or a textbook. It is an interactive knowledge map: users explore a graph of concept nodes, click into one, and work through an illustrated module with live simulations.
 
-All 13 modules are complete. The project is production-ready and deployed on AWS.
+All 14 modules are complete. The project is production-ready and deployed on AWS EC2.
 
 Built solo with Claude Code as a collaborator (Claude Code wrote the majority of code, directed by the developer).
 
@@ -20,9 +20,9 @@ All five build phases are complete. The site is fully functional end-to-end:
 
 - Auth (register, login, logout, refresh) works
 - Concept map renders, pan/zoom/hover works, tooltips work
-- All 13 modules load and their interactive components work
+- All 14 modules load and their interactive components work
 - Progress persists per user in Turso
-- CI/CD deploys backend to App Runner and frontend to S3/CloudFront
+- CI/CD builds Docker images to GHCR and deploys via SSH to EC2
 
 Active branch: `master`. One known ESLint error remains unfixed (see **Known issues** below).
 
@@ -45,14 +45,15 @@ Active branch: `master`. One known ESLint error remains unfixed (see **Known iss
 - `libsql-client` **0.3.1** — Turso HTTP client (note: `libsql` is the newer official SDK; migration deferred)
 - `python-jose` — JWT encode/decode
 - `bcrypt` — password hashing (direct, NOT via passlib — CLAUDE.md previously said passlib, that was wrong)
-- `slowapi` — rate limiting
 - `pydantic-settings` — environment config
 
 ### Infrastructure
-- Backend: AWS App Runner (Docker image from ECR)
-- Frontend: AWS S3 + CloudFront
+- Server: AWS EC2 (eu-north-1), Docker Compose (`docker-compose.prod.yml`)
+- nginx: reverse proxy + TLS termination (Let's Encrypt certs, domain `aiphilo.pathofbalance.io`) + rate limiting
+- Images: GHCR (`ghcr.io/hadiabu/ai-philosophy-backend:latest`, `…-frontend:latest`)
 - Database: Turso (libSQL) — relational + vector (sqlite-vec)
-- CI/CD: GitHub Actions
+- Analytics: PostHog (injected at frontend build time via `VITE_POSTHOG_KEY` / `VITE_POSTHOG_HOST`)
+- CI/CD: GitHub Actions → GHCR → SSH deploy to EC2
 
 ---
 
@@ -69,7 +70,7 @@ These must never be weakened. Every PR must preserve all of them.
 | Stale token cleanup | `_cleanup_tokens(user_id)` runs on every login and refresh, deletes that user's expired/revoked rows |
 | SQL | Parameterised only — never f-strings or string concatenation in SQL |
 | Input validation | Pydantic on all request bodies; email validated by `email-validator` |
-| Rate limiting | `@limiter.limit(...)` on all four auth endpoints |
+| Rate limiting | nginx `limit_req_zone` — `auth_zone` (10r/m, burst=5) on `/api/auth`, `api_zone` (60r/m, burst=20) on `/api` |
 | CORS | `allow_origins=settings.cors_origins`, `allow_methods=["GET","POST","DELETE"]` — no PUT |
 | Security headers | Pure ASGI middleware (`_SecurityHeadersMiddleware`) — CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, HSTS (production only) |
 | Cookie deletion | `_clear_refresh_cookie` passes `secure=settings.environment == "production"` to match how the cookie was set |
@@ -114,14 +115,14 @@ This graph lives in `frontend/src/data/nodes.ts`. The `effectiveAvailable()` fun
 
 ---
 
-## All 13 modules
+## All 14 modules
 
 Each module is a React component at `frontend/src/pages/modules/<Name>.tsx`. They accept `{ onComplete, completed }` props. All are lazy-loaded in `Learn.tsx`.
 
 | ID | File | Key interactive components |
 |---|---|---|
 | `what-is-ai` | WhatIsAI.tsx | Static diagrams |
-| `types-of-ml` | TypesOfML.tsx | Paradigm cards, scatter plot with click-to-classify |
+| `types-of-ml` | TypesOfML.tsx | Paradigm cards, scatter plot with click-to-classify, unsupervised clustering demo, RL grid world demo |
 | `neural-networks` | NeuralNetworks.tsx | Weight sliders, forward pass SVG, activation chart, XOR TF.js demo |
 | `activations` | Activations.tsx | Function curve explorer with input scrubber |
 | `transformers` | Transformers.tsx | Architecture diagram |
@@ -135,7 +136,7 @@ Each module is a React component at `frontend/src/pages/modules/<Name>.tsx`. The
 | `hallucinations` | Hallucinations.tsx | Hallucination type gallery, strategy cards |
 | `use-cases` | UseCases.tsx | Code demo, summarisation demo, classification demo |
 
-The prose in all 13 modules was written for non-technical readers. When editing module content: use everyday analogies, explain the "why it matters", avoid assuming programming knowledge.
+Every module ends with a 5-question quiz (`Quiz` component, `frontend/src/components/Quiz.tsx`). The prose in all 14 modules was written for non-technical readers. When editing module content: use everyday analogies, explain the "why it matters", avoid assuming programming knowledge.
 
 ---
 
@@ -190,6 +191,14 @@ Cookie constants (`_COOKIE_KEY`, `_COOKIE_PATH`) are defined at module level so 
 
 ---
 
+### Deploy and rollback
+
+Images are tagged `:<commit-sha>` and `:latest`. CI deploys by SHA via `scripts/deploy.sh <backend|frontend> <sha>`, which runs on the EC2 host. Backend and frontend are tagged independently (the workflows are path-filtered, so a SHA usually exists for only one image). The running tags live in `.image-tags` on the server (gitignored; compose reads them as `BACKEND_TAG` / `FRONTEND_TAG`, default `latest`).
+
+Rollback: SSH to the host, run `./scripts/deploy.sh history` to find the previous SHA, then `./scripts/deploy.sh backend <previous-sha>`. A bad tag fails at `pull`, before anything restarts.
+
+---
+
 ## Frontend architecture
 
 ### Auth context split
@@ -210,7 +219,7 @@ Axios instance with two interceptors:
 
 ### Module loading (`Learn.tsx`)
 
-All 13 modules are loaded with `React.lazy()` — each gets its own JS chunk. The main bundle is ~300 KB (97 KB gzipped); individual module chunks are 9–28 KB each.
+All 14 modules are loaded with `React.lazy()` — each gets its own JS chunk. The main bundle is ~300 KB (97 KB gzipped); individual module chunks are 9–28 KB each.
 
 Named exports (`export function WhatIsAI`) must be wrapped for `React.lazy`:
 ```typescript
@@ -237,7 +246,6 @@ aiphilosophy/
 │   │   │       └── users.py
 │   │   ├── core/
 │   │   │   ├── config.py
-│   │   │   ├── limits.py
 │   │   │   └── security.py
 │   │   ├── db/
 │   │   │   ├── client.py
@@ -252,7 +260,8 @@ aiphilosophy/
 │   │   ├── components/
 │   │   │   ├── ConceptMap.tsx
 │   │   │   ├── ErrorBoundary.tsx
-│   │   │   └── ProtectedRoute.tsx
+│   │   │   ├── ProtectedRoute.tsx
+│   │   │   └── Quiz.tsx              ← shared quiz component used by all modules
 │   │   ├── contexts/
 │   │   │   ├── AuthContext.tsx      ← context + interface only, no JSX
 │   │   │   └── AuthProvider.tsx     ← provider component only
@@ -285,18 +294,23 @@ aiphilosophy/
 │   │   │   │   ├── PromptEngineering.tsx
 │   │   │   │   ├── Hallucinations.tsx
 │   │   │   │   └── UseCases.tsx
-│   │   │   ├── Home.tsx
+│   │   │   ├── Landing.tsx           ← public landing page (/ route)
+│   │   │   ├── Home.tsx              ← concept map (/home route, protected)
 │   │   │   ├── Learn.tsx
 │   │   │   └── Profile.tsx
 │   │   ├── App.tsx
 │   │   └── main.tsx
+│   ├── Dockerfile
 │   ├── Dockerfile.dev
 │   └── package.json
+├── nginx/
+│   └── nginx.conf                    ← reverse proxy, TLS, rate limiting
 ├── .github/
 │   └── workflows/
-│       ├── backend.yml
-│       └── frontend.yml
-├── docker-compose.yml
+│       ├── backend.yml               ← test → build GHCR → SSH deploy to EC2
+│       └── frontend.yml              ← typecheck → build GHCR → SSH deploy to EC2
+├── docker-compose.yml                ← local dev
+├── docker-compose.prod.yml           ← production (nginx + backend + frontend)
 ├── CLAUDE.md
 └── README.md
 ```

@@ -41,7 +41,7 @@ function ModuleErrorFallback() {
       <p className="text-4xl">⚠</p>
       <h2 className="mt-4 text-lg font-semibold">This module failed to load</h2>
       <p className="mt-2 text-sm text-gray-400">Try refreshing the page.</p>
-      <Link to="/" className="mt-6 text-sm text-indigo-400 transition-colors hover:text-indigo-300">
+      <Link to="/home" className="mt-6 text-sm text-indigo-400 transition-colors hover:text-indigo-300">
         ← Back to map
       </Link>
     </div>
@@ -56,7 +56,7 @@ export function Learn() {
   const [unmarking, setUnmarking] = useState(false)
 
   if (!nodeId || !NODES_BY_ID[nodeId] || !(nodeId in MODULES)) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/home" replace />
   }
 
   const node = NODES_BY_ID[nodeId]
@@ -79,7 +79,7 @@ export function Learn() {
         time_spent_seconds: Math.round((Date.now() - startTimeRef.current) / 1000),
       })
       await markComplete(nodeId!)
-      navigate('/')
+      navigate('/home')
     } finally {
       setCompleting(false)
     }
@@ -101,7 +101,7 @@ export function Learn() {
       <div className="sticky top-0 z-10 border-b border-gray-800/60 bg-gray-950/90 backdrop-blur">
         <div className="mx-auto flex max-w-2xl items-center gap-3 px-6 py-4">
           <Link
-            to="/"
+            to="/home"
             className="flex items-center gap-1.5 text-sm text-gray-400 transition-colors hover:text-white"
           >
             <span>←</span>

@@ -1,3 +1,4 @@
+# Tagged by commit SHA in CI; deployed via scripts/deploy.sh
 FROM python:3.12-slim
 
 WORKDIR /app

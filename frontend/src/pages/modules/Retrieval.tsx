@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from 'react'
+﻿import { useState, type ReactNode } from 'react'
+import { Quiz, type QuizQuestion } from '../../components/Quiz'
 
 type ModuleProps = { onComplete: () => Promise<void>; completed: boolean }
 
@@ -237,6 +238,39 @@ function KNNDemo() {
 
 // ─── Module export ────────────────────────────────────────────────────────────
 
+const RET_QUIZ: QuizQuestion[] = [
+  {
+    q: 'What does cosine similarity measure between two vectors?',
+    options: ['The sum of their elements', 'The angle between them — capturing semantic similarity regardless of vector magnitude', 'The Euclidean distance between their endpoints', 'The number of shared non-zero elements'],
+    answer: 1,
+    explanation: 'Cosine similarity = (A · B) / (|A| × |B|). It measures direction alignment, so two semantically identical but differently-scaled vectors still score 1.0.',
+  },
+  {
+    q: 'In k-NN retrieval, what does "k" mean?',
+    options: ['The number of dimensions in the embedding', 'The number of nearest neighbors to return', 'The number of training steps', 'The length of the query'],
+    answer: 1,
+    explanation: 'k-NN returns the k vectors in the index most similar to the query. For RAG you might use k=3–10 document chunks.',
+  },
+  {
+    q: 'Why is exact nearest-neighbor search impractical for millions of vectors?',
+    options: ['Vectors are too large to store', 'It requires computing similarity against every vector in the index — O(n) — which is too slow at scale', 'Exact search requires floating-point operations', 'It only works in low dimensions'],
+    answer: 1,
+    explanation: 'With 100 million vectors, even a fast dot-product per pair takes seconds. Production systems need approximate search to return results in milliseconds.',
+  },
+  {
+    q: 'What does ANN (Approximate Nearest Neighbor) search trade for speed?',
+    options: ['Storage space', 'Exact correctness — it might miss the single closest match, but is orders of magnitude faster', 'Embedding quality', 'Query length'],
+    answer: 1,
+    explanation: 'ANN algorithms (HNSW, IVF, etc.) build index structures that let them skip most vectors. You get ~95–99% of the exact answers in milliseconds instead of seconds.',
+  },
+  {
+    q: 'What is HNSW?',
+    options: ['A tokenization algorithm', 'Hierarchical Navigable Small World — a graph-based ANN index that enables fast approximate nearest-neighbor search', 'A type of attention mechanism', 'A transformer architecture variant'],
+    answer: 1,
+    explanation: 'HNSW builds a multi-layer graph where each node links to its nearest neighbors. Search navigates from coarse upper layers to fine-grained lower layers for fast ANN retrieval.',
+  },
+]
+
 export function Retrieval({ onComplete, completed }: ModuleProps) {
   return (
     <div className="mx-auto max-w-2xl px-6 py-12 text-white">
@@ -317,6 +351,11 @@ export function Retrieval({ onComplete, completed }: ModuleProps) {
             </div>
           ))}
         </div>
+      </Section>
+
+      <Section number={4} title="Quiz Yourself">
+        <p className="mb-4 leading-relaxed text-gray-300">Check whether cosine similarity, k-NN, and approximate search have clicked.</p>
+        <Quiz questions={RET_QUIZ} title="Retrieval" />
       </Section>
 
       <section className="mt-4 rounded-2xl border border-indigo-900/60 bg-indigo-950/30 p-8 text-center">

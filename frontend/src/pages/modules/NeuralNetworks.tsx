@@ -1,4 +1,5 @@
-import { Fragment, useState, type ReactNode } from 'react'
+﻿import { Fragment, useState, type ReactNode } from 'react'
+import { Quiz, type QuizQuestion } from '../../components/Quiz'
 
 type ModuleProps = { onComplete: () => Promise<void>; completed: boolean }
 
@@ -506,6 +507,39 @@ function XORDemo() {
 
 // ─── Module export ────────────────────────────────────────────────────────────
 
+const NN_QUIZ: QuizQuestion[] = [
+  {
+    q: 'What does a single artificial neuron compute?',
+    options: ['Stores a training example for lookup', 'Weighted sum of inputs + bias → activation function → one output number', 'A random value sampled from its weights', 'The gradient of the loss function'],
+    answer: 1,
+    explanation: 'A neuron multiplies each input by its weight, adds a bias, sums it all up, then passes the result through an activation function to produce its output.',
+  },
+  {
+    q: 'Why do neural networks need activation functions?',
+    options: ['To reduce the number of parameters', 'To add non-linearity — without them, stacking layers is equivalent to a single linear layer', 'To speed up inference', 'To prevent overfitting'],
+    answer: 1,
+    explanation: 'Without non-linearity, composing many linear layers is still just one linear transformation. Activation functions let networks learn curved, complex boundaries.',
+  },
+  {
+    q: 'What does the loss function measure during training?',
+    options: ['How many layers the network has', "How wrong the model's predictions are compared to the correct answer", 'The learning rate schedule', 'The total number of parameters'],
+    answer: 1,
+    explanation: 'Loss measures the gap between predictions and correct answers. Backpropagation uses this to adjust weights and reduce the error over time.',
+  },
+  {
+    q: 'The XOR problem proved that a single-layer perceptron:',
+    options: ['Can solve any classification problem', 'Cannot separate some patterns that require a non-linear boundary', 'Only works with numerical inputs', 'Always overfits small datasets'],
+    answer: 1,
+    explanation: "XOR's four outcomes cannot be separated by a single straight line — which motivated multi-layer networks with hidden layers.",
+  },
+  {
+    q: 'What does backpropagation do?',
+    options: ['Adds noise to prevent overfitting', "Computes each weight's contribution to the error, then nudges it to reduce loss", 'Removes weights below a threshold', 'Doubles the learning rate each iteration'],
+    answer: 1,
+    explanation: 'Backpropagation uses the chain rule to compute gradients — how much each weight increased the error — then performs gradient descent to reduce the loss.',
+  },
+]
+
 export function NeuralNetworks({ onComplete, completed }: ModuleProps) {
   return (
     <div className="mx-auto max-w-2xl px-6 py-12 text-white">
@@ -597,6 +631,11 @@ export function NeuralNetworks({ onComplete, completed }: ModuleProps) {
           them. Click "Train" below to watch it figure this out on its own in seconds.
         </p>
         <XORDemo />
+      </Section>
+
+      <Section number={6} title="Quiz Yourself">
+        <p className="mb-4 leading-relaxed text-gray-300">Check whether neurons, layers, and backpropagation have clicked.</p>
+        <Quiz questions={NN_QUIZ} title="Neural Networks" />
       </Section>
 
       {/* Completion */}
