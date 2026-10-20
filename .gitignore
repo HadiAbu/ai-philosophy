@@ -22,3 +22,7 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+
+# Deploy state (server only)
+.image-tags
+.deploy-history

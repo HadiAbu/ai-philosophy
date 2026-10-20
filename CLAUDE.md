@@ -191,6 +191,14 @@ Cookie constants (`_COOKIE_KEY`, `_COOKIE_PATH`) are defined at module level so 
 
 ---
 
+### Deploy and rollback
+
+Images are tagged `:<commit-sha>` and `:latest`. CI deploys by SHA via `scripts/deploy.sh <backend|frontend> <sha>`, which runs on the EC2 host. Backend and frontend are tagged independently (the workflows are path-filtered, so a SHA usually exists for only one image). The running tags live in `.image-tags` on the server (gitignored; compose reads them as `BACKEND_TAG` / `FRONTEND_TAG`, default `latest`).
+
+Rollback: SSH to the host, run `./scripts/deploy.sh history` to find the previous SHA, then `./scripts/deploy.sh backend <previous-sha>`. A bad tag fails at `pull`, before anything restarts.
+
+---
+
 ## Frontend architecture
 
 ### Auth context split
