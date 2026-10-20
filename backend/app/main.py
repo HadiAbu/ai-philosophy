@@ -65,6 +65,7 @@ app.include_router(users.router, prefix="/api/users", tags=["users"])
 
 
 @app.get("/health")
+@app.get("/api/health")  # reachable through nginx, used by the deploy smoke test
 async def health() -> dict:
     return {"status": "ok"}
 

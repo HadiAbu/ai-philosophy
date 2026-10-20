@@ -3,7 +3,8 @@
 #   ./scripts/deploy.sh backend  <tag>
 #   ./scripts/deploy.sh frontend <tag>
 #   ./scripts/deploy.sh history            # show past deploys, newest last
-# Rollback = run it again with the previous SHA from `history`.
+#   ./scripts/deploy.sh rollback <service> # redeploy the tag before the current one
+# Rollback can also be done by hand with any SHA from `history`.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -16,11 +17,18 @@ if [ "${1:-}" = "history" ]; then
   exit 0
 fi
 
+if [ "${1:-}" = "rollback" ]; then
+  svc=${2:-}
+  prev=$(awk -v s="$svc" '$2==s {p=c; c=$3} END {print p}' "$HISTORY_FILE" 2>/dev/null || true)
+  [ -n "$prev" ] || { echo "no previous $svc tag in history; cannot roll back" >&2; exit 1; }
+  exec "$(pwd)/scripts/deploy.sh" "$svc" "$prev"
+fi
+
 service=${1:-}
 tag=${2:-}
 case "$service" in
   backend|frontend) ;;
-  *) echo "usage: $0 <backend|frontend> <tag> | history" >&2; exit 2 ;;
+  *) echo "usage: $0 <backend|frontend> <tag> | rollback <service> | history" >&2; exit 2 ;;
 esac
 [ -n "$tag" ] || { echo "usage: $0 $service <tag>" >&2; exit 2; }
 

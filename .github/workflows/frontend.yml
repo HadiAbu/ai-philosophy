@@ -38,6 +38,7 @@ jobs:
     env:
       AWS_REGION: 'eu-north-1'
       AWS_SECURITY_GROUP_ID: 'sg-0ed203d9b6df0f8c3'
+      SITE_URL: 'https://aiphilo.pathofbalance.io'
 
     steps:
       - uses: actions/checkout@v4
@@ -93,6 +94,21 @@ jobs:
             cd ~/projects/ai-philosophy
             git pull
             ./scripts/deploy.sh frontend ${{ github.sha }}
+
+      - name: Smoke test
+        id: smoke
+        run: ./scripts/smoke-test.sh "$SITE_URL"
+
+      - name: Roll back on failed smoke test
+        if: failure() && steps.smoke.outcome == 'failure'
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/projects/ai-philosophy
+            ./scripts/deploy.sh rollback frontend
 
       - name: Revoke Runner IP
         if: always()
